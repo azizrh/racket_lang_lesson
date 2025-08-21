@@ -1,3 +1,6 @@
+docker exec -t sxpr_db pg_dumpall -U postgres > backup.sql
+
+
 # from the project root
 docker compose up -d db
 # watch health until healthy

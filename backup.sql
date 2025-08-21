@@ -277,6 +277,22 @@ COPY public.attempt (id, problem_id, submitted_text, is_correct, stage, error_re
 11	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"pass": true, "type": "expect", "index": 0, "actual": 9, "expected": 9}]}	2025-08-20 09:26:37.947569+00
 12	7	(+ 7 (* 8 2))	t	eval	\N	{"tests": 0, "value": 23, "passed": 0, "results": []}	2025-08-20 09:26:57.327784+00
 13	41	(+ 7 3)	t	eval	\N	{"tests": 1, "value": 10, "passed": 1, "results": [{"expr": "(+ 7 3)", "pass": true, "type": "expr", "index": 0, "actual": 10, "exprValue": 10}]}	2025-08-21 06:31:18.908736+00
+15	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:35:17.442029+00
+14	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:35:17.443146+00
+16	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:42:28.501606+00
+17	2	(- 22 9)	t	eval	\N	{"tests": 1, "value": 13, "passed": 1, "results": [{"expr": "(- 22 9)", "pass": true, "type": "expr", "index": 0, "actual": 13, "exprValue": 13}]}	2025-08-21 08:42:34.902065+00
+18	3	(* 2 24)	t	eval	\N	{"tests": 1, "value": 48, "passed": 1, "results": [{"expr": "(* 2 24)", "pass": true, "type": "expr", "index": 0, "actual": 48, "exprValue": 48}]}	2025-08-21 08:42:44.417519+00
+19	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:53:56.678665+00
+20	2	(- 22 9)	t	eval	\N	{"tests": 1, "value": 13, "passed": 1, "results": [{"expr": "(- 22 9)", "pass": true, "type": "expr", "index": 0, "actual": 13, "exprValue": 13}]}	2025-08-21 08:54:03.180769+00
+21	3	(* 2 24)	t	eval	\N	{"tests": 1, "value": 48, "passed": 1, "results": [{"expr": "(* 2 24)", "pass": true, "type": "expr", "index": 0, "actual": 48, "exprValue": 48}]}	2025-08-21 08:54:09.529296+00
+22	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:57:40.964917+00
+23	2	(- 22 9)	t	eval	\N	{"tests": 1, "value": 13, "passed": 1, "results": [{"expr": "(- 22 9)", "pass": true, "type": "expr", "index": 0, "actual": 13, "exprValue": 13}]}	2025-08-21 08:57:45.646305+00
+24	3	(* 2 24)	t	eval	\N	{"tests": 1, "value": 48, "passed": 1, "results": [{"expr": "(* 2 24)", "pass": true, "type": "expr", "index": 0, "actual": 48, "exprValue": 48}]}	2025-08-21 08:57:50.80939+00
+25	41	(+ 7 3)	t	eval	\N	{"tests": 1, "value": 10, "passed": 1, "results": [{"expr": "(+ 7 3)", "pass": true, "type": "expr", "index": 0, "actual": 10, "exprValue": 10}]}	2025-08-21 09:07:38.479057+00
+26	42	(* 9 4)	t	eval	\N	{"tests": 1, "value": 36, "passed": 1, "results": [{"expr": "(* 9 4)", "pass": true, "type": "expr", "index": 0, "actual": 36, "exprValue": 36}]}	2025-08-21 09:11:11.396737+00
+27	61	(+ 4 7)	t	eval	\N	{"tests": 1, "value": 11, "passed": 1, "results": [{"expr": "(+ 4 7)", "pass": true, "type": "expr", "index": 0, "actual": 11, "exprValue": 11}]}	2025-08-21 09:29:49.495194+00
+28	62	(- 12 3)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(- 12 3)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 09:29:55.153015+00
+29	63	(* 8 9)	t	eval	\N	{"tests": 1, "value": 72, "passed": 1, "results": [{"expr": "(* 8 9)", "pass": true, "type": "expr", "index": 0, "actual": 72, "exprValue": 72}]}	2025-08-21 09:30:00.966302+00
 \.
 
 
@@ -287,6 +303,9 @@ COPY public.attempt (id, problem_id, submitted_text, is_correct, stage, error_re
 COPY public.lesson (id, title, body_md, created_at, validator_default, validator_spec) FROM stdin;
 1	Intro to S-expressions	An S-expression is a syntax for expressing data and operations on the data.\r\n\r\nThe "S" in S-expression stands for "symbolic" so S-expression is shorthand for "Symbolic Expression."\r\n\r\nFor example, the expression `2 + 3` can be translated into an S-expression\r\n\r\n```lisp\r\n(+ 2 3)\r\n```\r\n\r\nNote the following:\r\n\r\n- An S-expression must *always* be surrounded by matched parentheses\r\n- The operation comes first. In the example above, this is an addition\r\n- The operation must be followed by the inputs to the operation\r\n\r\nExample:\r\n\r\nWrite `22 + 3` as an S-expression\r\n\r\nAnswer:\r\n\r\n(+ 22 3)\r\n\r\nNote that since the order of addition does not matter, we could have written the S-expression as (+ 3 22). However, that is not the case for operations where order matters.\r\n\r\nExample:\r\n\r\nWrite `56 - 4` as an S-expression\r\n\r\nAnswer:\r\n\r\n(- 56 4)\r\n\r\nWe need to know that 4 is being subtracted from 56, not 56 from 4. Therefore, the 56 goes first, followed by the 4.\r\n\r\nExample:\r\n\r\nWrite `2 * 6` as an S-expression. Here, * means "multiply"\r\n\r\nAnswer:\r\n\r\n(* 2 6)\r\n\r\nAgain, we write the operation first, followed by the inputs.	2025-08-20 04:07:18.105892+00	racket	{"lang": "racket/base", "mode": "eval", "mem_mb": 64, "time_ms": 300}
 2	Spaces within an S-expression	An s-expression always has the form\r\n\r\n`<left parenthesis> op data <right parenthesis>`\r\n\r\nFor example, `(+ 5 6)` is an s-expression that adds 5 to 6.\r\n\r\nAn s-expression can have multiple spaces in them. The following are valid s-expressions\r\n\r\n- `( + 5 6)`\r\n- `(+ 5     6)`\r\n- `( + 5 6 )`\r\n- `(   +  5  6 )`\r\n\r\nThe one rule is that we must keep at least one space between the operator and the data.\r\n\r\nFor example, the following is not a valid s-expression:\r\n\r\n`(+5 6)`\r\n\r\nbecause there is no space between + and 5.\r\n\r\nThe following is also not valid:\r\n\r\n`(+ 56)`\r\n\r\nFor neatness purposes, don't put any spaces next to the parentheses even though you are allowed to do so. Also, only use one space between the data and the operator.\r\n\r\nExample:\r\n\r\nMake the following s-expression neater\r\n\r\n( + 32  61 )\r\n\r\nAnswer:\r\n\r\n(+ 32 61)\r\n\r\nExample:\r\n\r\nMake the following s-expression neater\r\n\r\n( + 24  3)\r\n\r\nAnswer:\r\n\r\n(+ 24 3)	2025-08-21 05:58:15.038614+00	racket	{"lang": "racket/base", "mode": "eval", "mem_mb": 64, "time_ms": 300}
+3	Fixing invalid S-expressions	An s-expression must always have the form\r\n\r\n`<left parenthesis> op data <right parenthesis>`\r\n\r\nFor example, `(* 2 3)` is an s-expression.\r\n\r\nIf any of these parts are missing, it is not a valid s-expression, and the computer cannot understand it.\r\n\r\nExample:\r\nFix the following s-expression (2 * 5)\r\n\r\nAnswer:\r\n(* 2 5)\r\n\r\nAlthough it looks like a valid math expression, it is not a valid s-expression because the operator must come first.\r\n\r\nExample:\r\nFix the following s-expression (- 12 3\r\n\r\nAnswer:\r\n(- 12 3)\r\n\r\nThe one above is missing a parenthesis on the right.	2025-08-21 09:15:12.659617+00	racket	{"lang": "racket/base", "mode": "eval", "mem_mb": 64, "time_ms": 300}
+4	Negative numbers in S-expressions	We can put negative numbers into an s-expression. The syntax for this is what you would expect.\r\n\r\nThe following s-expression adds 3 to negative 1:\r\n\r\n(+ 3 -1)\r\n\r\nThe following expression multiplies 3 by -5:\r\n\r\n(* 3 -5)	2025-08-21 09:18:33.520669+00	racket	{"lang": "racket/base", "mode": "eval", "mem_mb": 64, "time_ms": 300}
+5	Division in S-expressions	The symbol for division in s-expressions (and most programming languages) is /\r\n\r\nFor example, 6 ÷ 3 is written as\r\n\r\n(/ 6 3)\r\n\r\nOrder matters in division, so the following is completely wrong:\r\n\r\n(/ 3 6)\r\n\r\nIt is not important the division results in a fraction. The following s-expression is the correct transation of 7 ÷ 3\r\n\r\n(/ 7 3)	2025-08-21 09:25:27.664126+00	racket	{"lang": "racket/base", "mode": "eval", "mem_mb": 64, "time_ms": 300}
 \.
 
 
@@ -355,6 +374,66 @@ COPY public.problem (id, lesson_id, prompt_text, answer_text, created_at, valida
 58	2	Make the following s-expression neater:\\n\\n( + 9 ( + 8 7 ) )	(+ 9 (+ 8 7))	2025-08-21 05:58:55.764041+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 9 (+ 8 7))"}]}
 59	2	Make the following s-expression neater:\\n\\n( - ( + 13 4 ) 6 )	(- (+ 13 4) 6)	2025-08-21 05:58:55.764041+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- (+ 13 4) 6)"}]}
 60	2	Make the following s-expression neater:\\n\\n( * ( * 2 5 ) 3 )	(* (* 2 5) 3)	2025-08-21 05:58:55.764041+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* (* 2 5) 3)"}]}
+61	3	Fix the following s-expression:\\n\\n(4 + 7)	(+ 4 7)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 4 7)"}]}
+62	3	Fix the following s-expression:\\n\\n(- 12 3	(- 12 3)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- 12 3)"}]}
+63	3	Fix the following s-expression:\\n\\n* (8 9)	(* 8 9)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* 8 9)"}]}
+64	3	Fix the following s-expression:\\n\\n(+ 15 20	(+ 15 20)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 15 20)"}]}
+65	3	Fix the following s-expression:\\n\\n(25 - 5)	(- 25 5)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- 25 5)"}]}
+66	3	Fix the following s-expression:\\n\\n( 6 7 * )	(* 6 7)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* 6 7)"}]}
+67	3	Fix the following s-expression:\\n\\n(* 3, 4)	(* 3 4)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* 3 4)"}]}
+68	3	Fix the following s-expression:\\n\\n+ 10 11)	(+ 10 11)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 10 11)"}]}
+69	3	Fix the following s-expression:\\n\\n((+ 2 3)	(+ 2 3)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 2 3)"}]}
+70	3	Fix the following s-expression:\\n\\n(- 18, 6)	(- 18 6)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- 18 6)"}]}
+71	3	Fix the following s-expression:\\n\\n(* 4 5))	(* 4 5)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* 4 5)"}]}
+72	3	Fix the following s-expression:\\n\\n( 14 3 -)	(- 14 3)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- 14 3)"}]}
+73	3	Fix the following s-expression:\\n\\n(+ 21 9))	(+ 21 9)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 21 9)"}]}
+74	3	Fix the following s-expression:\\n\\n(+ (5 6))	(+ 5 6)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 5 6)"}]}
+75	3	Fix the following s-expression:\\n\\n(* 2 3 ]	(* 2 3)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* 2 3)"}]}
+76	3	Fix the following s-expression:\\n\\n[* 11 4)	(* 11 4)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* 11 4)"}]}
+77	3	Fix the following s-expression:\\n\\n(24 6 +)	(+ 24 6)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 24 6)"}]}
+78	3	Fix the following s-expression:\\n\\n(- 27; 3)	(- 27 3)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- 27 3)"}]}
+79	3	Fix the following s-expression:\\n\\n(* 5 6	(* 5 6)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* 5 6)"}]}
+80	3	Fix the following s-expression:\\n\\n+ (4 4)	(+ 4 4)	2025-08-21 09:17:32.535366+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 4 4)"}]}
+81	4	Write -3 + -5 as an S-expression	(+ -3 -5)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ -3 -5)"}]}
+82	4	Write -7 * -2 as an S-expression	(* -7 -2)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* -7 -2)"}]}
+83	4	Write -12 - -8 as an S-expression	(- -12 -8)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- -12 -8)"}]}
+84	4	Write -4 + -9 as an S-expression	(+ -4 -9)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ -4 -9)"}]}
+85	4	Write -6 * -5 as an S-expression	(* -6 -5)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* -6 -5)"}]}
+86	4	Write -15 - -3 as an S-expression	(- -15 -3)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- -15 -3)"}]}
+87	4	Write -10 + -11 as an S-expression	(+ -10 -11)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ -10 -11)"}]}
+88	4	Write -2 * -9 as an S-expression	(* -2 -9)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* -2 -9)"}]}
+89	4	Write -13 - -14 as an S-expression	(- -13 -14)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- -13 -14)"}]}
+90	4	Write -20 + -7 as an S-expression	(+ -20 -7)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ -20 -7)"}]}
+91	4	Write -25 * -3 as an S-expression	(* -25 -3)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* -25 -3)"}]}
+92	4	Write -30 - -1 as an S-expression	(- -30 -1)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- -30 -1)"}]}
+93	4	Write 5 + -8 as an S-expression	(+ 5 -8)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 5 -8)"}]}
+94	4	Write 9 * -3 as an S-expression	(* 9 -3)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* 9 -3)"}]}
+95	4	Write -14 + 6 as an S-expression	(+ -14 6)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ -14 6)"}]}
+96	4	Write 7 - -12 as an S-expression	(- 7 -12)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- 7 -12)"}]}
+97	4	Write -18 * 2 as an S-expression	(* -18 2)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(* -18 2)"}]}
+98	4	Write 15 - -5 as an S-expression	(- 15 -5)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- 15 -5)"}]}
+99	4	Write 3 + -27 as an S-expression	(+ 3 -27)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(+ 3 -27)"}]}
+100	4	Write -22 - 4 as an S-expression	(- -22 4)	2025-08-21 09:22:17.7784+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(- -22 4)"}]}
+101	5	Write 7 ÷ 3 as an S-expression	(/ 7 3)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 7 3)"}]}
+102	5	Write 5 ÷ 2 as an S-expression	(/ 5 2)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 5 2)"}]}
+103	5	Write 9 ÷ 4 as an S-expression	(/ 9 4)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 9 4)"}]}
+104	5	Write 11 ÷ 6 as an S-expression	(/ 11 6)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 11 6)"}]}
+105	5	Write 13 ÷ 5 as an S-expression	(/ 13 5)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 13 5)"}]}
+106	5	Write 8 ÷ 3 as an S-expression	(/ 8 3)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 8 3)"}]}
+107	5	Write 10 ÷ 3 as an S-expression	(/ 10 3)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 10 3)"}]}
+108	5	Write 14 ÷ 9 as an S-expression	(/ 14 9)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 14 9)"}]}
+109	5	Write 25 ÷ 12 as an S-expression	(/ 25 12)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 25 12)"}]}
+110	5	Write 29 ÷ 8 as an S-expression	(/ 29 8)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 29 8)"}]}
+111	5	Write 19 ÷ 7 as an S-expression	(/ 19 7)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 19 7)"}]}
+112	5	Write 17 ÷ 15 as an S-expression	(/ 17 15)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 17 15)"}]}
+113	5	Write 6 ÷ 3 as an S-expression	(/ 6 3)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 6 3)"}]}
+114	5	Write 12 ÷ 4 as an S-expression	(/ 12 4)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 12 4)"}]}
+115	5	Write 24 ÷ 6 as an S-expression	(/ 24 6)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 24 6)"}]}
+116	5	Write 28 ÷ 7 as an S-expression	(/ 28 7)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 28 7)"}]}
+117	5	Write 30 ÷ 5 as an S-expression	(/ 30 5)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 30 5)"}]}
+118	5	Write 20 ÷ 10 as an S-expression	(/ 20 10)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 20 10)"}]}
+119	5	Write 21 ÷ 7 as an S-expression	(/ 21 7)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 21 7)"}]}
+120	5	Write 18 ÷ 9 as an S-expression	(/ 18 9)	2025-08-21 09:28:41.14044+00	racket	{"lang": "racket/base", "mode": "eval", "tests": [{"expr": "(/ 18 9)"}]}
 \.
 
 
@@ -362,7 +441,7 @@ COPY public.problem (id, lesson_id, prompt_text, answer_text, created_at, valida
 -- Name: attempt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.attempt_id_seq', 13, true);
+SELECT pg_catalog.setval('public.attempt_id_seq', 29, true);
 
 
 --
@@ -376,7 +455,7 @@ SELECT pg_catalog.setval('public.lesson_id_seq', 1, true);
 -- Name: problem_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.problem_id_seq', 60, true);
+SELECT pg_catalog.setval('public.problem_id_seq', 120, true);
 
 
 --
