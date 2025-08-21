@@ -39,7 +39,20 @@
     code{background:#0b1130;border:1px solid #2a3574;border-radius:8px;padding:1px 6px}
     .footer{padding:10px 16px;border-top:1px solid #1c2550;display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom-left-radius:var(--radius);border-bottom-right-radius:var(--radius)}
     /* Modal */
-    .modal{display:none;position:fixed;z-index:100;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);align-items:center;justify-content:center}
+        /* replace your existing .modal rule with this */
+    .modal{
+      /* visible by default; x-show will hide it by adding inline display:none */
+      display:flex;
+      position:fixed;
+      z-index:100;
+      left:0; top:0; width:100%; height:100%;
+      background:rgba(0,0,0,.6);
+      align-items:center; justify-content:center;
+    }
+
+    /* hide any x-cloak elements until Alpine is ready */
+    [x-cloak] { display: none !important; }
+
     .modal-content{background:#121935;padding:20px;border-radius:16px;max-width:420px;text-align:center;border:1px solid #1c2550}
     .modal-content h2{margin:4px 0 10px}
     .lesson-display {white-space: pre-wrap;background:#0e1430;border:1px solid #243067;border-radius:12px;padding:12px;color:var(--text);}
@@ -79,10 +92,6 @@
           <div class="row" style="justify-content:flex-end">
             <button class="btn secondary" id="refreshLessonBtn" hidden @click="refreshLesson()">Refresh from server</button>
           </div>
-          <!-- <details>
-            <summary class="muted">Show CFG used for S-expression parsing (informational)</summary>
-            <pre id="cfgBox" x-text="cfgText" style="white-space:pre-wrap"></pre>
-          </details> -->
         </div>
       </div>
     </section>
@@ -91,14 +100,14 @@
     <section class="card" id="practiceCard">
       <header>
         <h2 style="margin:0 0 6px 0;font-size:18px">Problems & Validator</h2>
-        <div class="muted small">Your answer is validated by the backend (CFG or Racket), based on the lesson/problem config.</div>
+        <div class="muted small" x-show="false">Your answer is validated by the backend (CFG or Racket), based on the lesson/problem config.</div>
       </header>
       <div class="content">
         <div class="stack">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <div class="row" style="gap:16px">
-              <label class="pill"><input type="checkbox" id="naryToggle" x-model="allowNary" /> Allow n-ary (≥2 operands)</label>
-              <label class="pill"><input type="checkbox" id="allowNeg" x-model="allowNeg" /> Allow negative integers</label>
+          <div class="row" style="justify-content:space-between;align-items:center" x-show="false">
+            <div class="row" style="gap:16px" hidden>
+              <label class="pill" hidden><input type="checkbox" id="naryToggle" x-model="allowNary"  /> Allow n-ary (≥2 operands)</label>
+              <label class="pill" hidden><input type="checkbox" id="allowNeg" x-model="allowNeg"/> Allow negative integers</label>
             </div>
             <div class="row">
               <button class="btn secondary" id="prevBtn" @click="prevProblem()">◀ Prev</button>
@@ -117,7 +126,7 @@
           <div class="row" style="justify-content:flex-start;gap:10px">
             <button class="btn" id="checkBtn" @click="check">Check (Enter)</button>
             <button class="btn secondary" id="revealBtn" @click="reveal">Reveal answer</button>
-            <button class="btn secondary" id="shuffleBtn" @click="shuffle">Shuffle</button>
+            <button class="btn secondary" id="shuffleBtn" @click="shuffle" x-show="false">Shuffle</button>
           </div>
 
           <div id="result" class="status" x-show="resultVisible" :class="resultOk ? 'ok' : 'err'" x-text="resultMessage"></div>
@@ -129,17 +138,18 @@
     </section>
   </main>
 
-  <!-- Congrats Modal -->
-  <div class="modal" id="congratsModal" x-show="showModal" x-transition.opacity>
-    <div class="modal-content" x-transition.scale>
-      <h2>🎉 Congratulations!</h2>
-      <p>You solved 3 problems correctly in a row!</p>
-      <div class="row" style="justify-content:center;margin-top:12px;gap:10px">
-        <button class="btn" id="keepGoingBtn" @click="closeCongrats()">Keep going</button>
-        <button class="btn secondary" id="resetCounterBtn" @click="successCount=0; closeCongrats()">Reset counter</button>
-      </div>
+<!-- add x-cloak so it starts hidden until Alpine initializes -->
+<div class="modal" id="congratsModal" x-cloak x-show="showModal" x-transition.opacity>
+  <div class="modal-content" x-transition.scale>
+    <h2>🎉 Congratulations!</h2>
+    <p>You solved 3 problems correctly in a row!</p>
+    <div class="row" style="justify-content:center;margin-top:12px;gap:10px">
+      <button class="btn" id="keepGoingBtn" @click="confirmAdvanceLesson()">Keep going</button>
+      <button class="btn secondary" id="resetCounterBtn" @click="resetStreakAndStay()">Stay &amp; reset</button>
     </div>
   </div>
+</div>
+
 
   <!-- deps -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -167,6 +177,14 @@
         allowNary: false,
         allowNeg: false,
         showModal: false,
+
+        // Auto-advance per problem
+        advanceOnCorrect: true,
+        advanceDelayMs: 900,
+        advanceTimerId: null,
+        clearAdvanceTimer(){
+          if (this.advanceTimerId){ clearTimeout(this.advanceTimerId); this.advanceTimerId = null; }
+        },
 
         // ====== Derived ======
         get hasMultipleLessons(){ return this.lessons.length > 1; },
@@ -287,7 +305,7 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
           // Load problems
           this.problems = await this.loadProblems(current.id);
           this.problemIdx = 0;
-          this.successCount = 0;
+          this.successCount = 0; // reset streak on lesson change
           this.showProblem();
         },
         async setLessonById(id){
@@ -304,9 +322,24 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
         },
 
         showProblem(){
+          this.clearAdvanceTimer();
           this.answer = '';
           this.hideResult();
           this.$nextTick(()=> { this.$refs.answerInput?.focus(); });
+        },
+
+        prevProblem(){
+          if(!this.problems.length) return;
+          this.clearAdvanceTimer();
+          this.problemIdx = (this.problemIdx - 1 + this.problems.length) % this.problems.length;
+          this.showProblem();
+        },
+
+        nextProblem(){
+          if(!this.problems.length) return;
+          this.clearAdvanceTimer();
+          this.problemIdx = (this.problemIdx + 1) % this.problems.length;
+          this.showProblem();
         },
 
         async check(){
@@ -318,14 +351,29 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
             if(!p){ this.setResult(false, 'No problem selected'); return; }
             const res = await this.backendValidate(p.id, input);
 
-            // Record attempt
+            // Record attempt (fire-and-forget)
             this.recordAttempt(p.id, input, res);
 
             if (res.ok){
               const stage = res.stage ? ` (${res.stage})` : '';
               this.setResult(true, 'Correct!' + stage);
               this.successCount++;
-              if(this.successCount === 3){ this.openCongrats(); }
+
+              // If third success, open modal asking to go to next lesson
+              if (this.successCount >= 3){
+                this.openCongrats();
+              }
+
+              // Auto-advance to the next problem unless modal is open
+              if (this.advanceOnCorrect){
+                this.clearAdvanceTimer();
+                this.advanceTimerId = setTimeout(() => {
+                  if (!this.showModal) {
+                    this.nextProblem();
+                  }
+                  this.clearAdvanceTimer();
+                }, this.advanceDelayMs);
+              }
             } else {
               let msg = res.error || 'Incorrect.';
               if (res.details && res.details.failures) {
@@ -333,6 +381,8 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
                 if (f && f.expr) msg += `\nFailed test: ${f.expr}`;
               }
               this.setResult(false, msg);
+              // Optionally reset streak here if you want strict "in a row":
+              // this.successCount = 0;
             }
           } catch(e){
             this.setResult(false, e.message || 'Backend validation failed.');
@@ -353,20 +403,21 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
           this.showProblem();
         },
 
-        prevProblem(){
-          if(!this.problems.length) return;
-          this.problemIdx = (this.problemIdx - 1 + this.problems.length) % this.problems.length;
-          this.showProblem();
-        },
-
-        nextProblem(){
-          if(!this.problems.length) return;
-          this.problemIdx = (this.problemIdx + 1) % this.problems.length;
-          this.showProblem();
-        },
-
+        // ====== Modal controls for next-lesson flow ======
         openCongrats(){ this.showModal = true; },
         closeCongrats(){ this.showModal = false; },
+
+        confirmAdvanceLesson(){
+          // User chose to continue to next lesson
+          this.closeCongrats();
+          this.successCount = 0; // reset for the new lesson
+          this.setLessonByIndex(this.lessonIdx + 1);
+        },
+        resetStreakAndStay(){
+          // User chose to stay in current lesson but reset streak
+          this.successCount = 0;
+          this.closeCongrats();
+        },
       }));
     });
   </script>
