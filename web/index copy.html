@@ -11,7 +11,7 @@
     }
     *{box-sizing:border-box}
     body{margin:0;font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:linear-gradient(180deg,#0b1020,#0d1330 40%,#0e1738)}
-    header{padding:20px 24px;border-bottom:1px solid #1c2550;background:rgba(0,0,0,.2);backdrop-filter: blur(6px);position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    header{padding:20px 24px;border-bottom:1px solid #1c2550;background:rgba(0,0,0,.2);backdrop-filter: blur(6px);position:sticky;top:0;z-index:10}
     header h1{margin:0;font-size:20px;letter-spacing:.3px}
     main{display:grid;gap:18px;padding:18px;grid-template-columns: 1fr 1fr;align-items:start}
     @media (max-width: 980px){main{grid-template-columns:1fr}}
@@ -38,30 +38,34 @@
     .small{font-size:12px}
     code{background:#0b1130;border:1px solid #2a3574;border-radius:8px;padding:1px 6px}
     .footer{padding:10px 16px;border-top:1px solid #1c2550;display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom-left-radius:var(--radius);border-bottom-right-radius:var(--radius)}
-    /* Modals */
+    /* Modal */
+        /* replace your existing .modal rule with this */
     .modal{
-      display:flex; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%;
-      background:rgba(0,0,0,.6); align-items:center; justify-content:center;
+      /* visible by default; x-show will hide it by adding inline display:none */
+      display:flex;
+      position:fixed;
+      z-index:100;
+      left:0; top:0; width:100%; height:100%;
+      background:rgba(0,0,0,.6);
+      align-items:center; justify-content:center;
     }
+
+    /* hide any x-cloak elements until Alpine is ready */
     [x-cloak] { display: none !important; }
-    .modal-content{background:#121935;padding:20px;border-radius:16px;max-width:480px;text-align:center;border:1px solid #1c2550}
+
+    .modal-content{background:#121935;padding:20px;border-radius:16px;max-width:420px;text-align:center;border:1px solid #1c2550}
     .modal-content h2{margin:4px 0 10px}
     .lesson-display {white-space: pre-wrap;background:#0e1430;border:1px solid #243067;border-radius:12px;padding:12px;color:var(--text);}
     .lesson-display p {margin: 0 0 0.5em;}
     .lesson-display code {font-family: monospace;background:#0b1130;border:1px solid #2a3574;border-radius:6px;padding:2px 4px;}
   </style>
 </head>
-<body x-data="app()" x-init="init()" @keydown.window.enter.prevent="if(!$event.shiftKey && !$event.ctrlKey){ if(!showLogin) check() }" @keydown.window.ctrl.enter.prevent="if(!showLogin) reveal()">
+<body x-data="app()" x-init="init()" @keydown.window.enter.prevent="if(!$event.shiftKey && !$event.ctrlKey){ check() }" @keydown.window.ctrl.enter.prevent="reveal()">
   <header>
     <h1>S-Expression Practice • Lesson + Validator</h1>
-    <div class="row">
-      <span class="pill" x-show="userId">Signed in as <strong x-text="'#' + userId"></strong></span>
-      <button class="btn secondary" x-show="!userId" @click="openLogin()">Sign in</button>
-      <button class="btn secondary" x-show="userId" @click="logout()">Log out</button>
-    </div>
   </header>
 
-  <main :style="showLogin ? 'filter: blur(2px); pointer-events:none; user-select:none;' : ''">
+  <main>
     <!-- LEFT: Lesson text -->
     <section class="card" id="lessonCard">
       <header>
@@ -76,16 +80,10 @@
           <button class="btn secondary" id="lessonPrevBtn" :disabled="!hasMultipleLessons" @click="setLessonByIndex(lessonIdx - 1)">◀ Prev lesson</button>
           <select id="lessonSelect" aria-label="Choose lesson" x-model="selectedLessonId" @change="setLessonById(selectedLessonId)">
             <template x-for="l in lessons" :key="l.id">
-              <option
-                :value="String(l.id)"
-                :disabled="!hasAccessToLesson(l.id)"
-                x-text="(hasAccessToLesson(l.id) ? '' : '🔒 ') + `${l.title} (ID ${l.id})`">
-              </option>
+              <option :value="String(l.id)" x-text="`${l.title} (ID ${l.id})`"></option>
             </template>
           </select>
-          <button class="btn secondary" id="lessonNextBtn"
-            :disabled="!hasMultipleLessons || !hasAccessToLesson(nextLessonId())"
-            @click="setLessonByIndex(lessonIdx + 1)">Next lesson ▶</button>
+          <button class="btn secondary" id="lessonNextBtn" :disabled="!hasMultipleLessons" @click="setLessonByIndex(lessonIdx + 1)">Next lesson ▶</button>
         </div>
       </header>
       <div class="content">
@@ -128,7 +126,7 @@
           <div class="row" style="justify-content:flex-start;gap:10px">
             <button class="btn" id="checkBtn" @click="check">Check (Enter)</button>
             <button class="btn secondary" id="revealBtn" @click="reveal">Reveal answer</button>
-            <button class="btn secondary" id="shuffleBtn" x-show="false" @click="shuffle">Shuffle</button>
+            <button class="btn secondary" id="shuffleBtn" @click="shuffle" x-show="false">Shuffle</button>
           </div>
 
           <div id="result" class="status" x-show="resultVisible" :class="resultOk ? 'ok' : 'err'" x-text="resultMessage"></div>
@@ -140,51 +138,18 @@
     </section>
   </main>
 
-  <!-- Congrats Modal (3-in-a-row) -->
-  <div class="modal" id="congratsModal" x-cloak x-show="showModal" x-transition.opacity>
-    <div class="modal-content" x-transition.scale>
-      <h2>🎉 Congratulations!</h2>
-      <p>You solved 3 problems correctly in a row!</p>
-      <div class="row" style="justify-content:center;margin-top:12px;gap:10px">
-        <button class="btn" id="keepGoingBtn" @click="confirmAdvanceLesson()">Unlock next lesson</button>
-        <button class="btn secondary" id="resetCounterBtn" @click="resetStreakAndStay()">Stay &amp; reset</button>
-      </div>
+<!-- add x-cloak so it starts hidden until Alpine initializes -->
+<div class="modal" id="congratsModal" x-cloak x-show="showModal" x-transition.opacity>
+  <div class="modal-content" x-transition.scale>
+    <h2>🎉 Congratulations!</h2>
+    <p>You solved 3 problems correctly in a row!</p>
+    <div class="row" style="justify-content:center;margin-top:12px;gap:10px">
+      <button class="btn" id="keepGoingBtn" @click="confirmAdvanceLesson()">Keep going</button>
+      <button class="btn secondary" id="resetCounterBtn" @click="resetStreakAndStay()">Stay &amp; reset</button>
     </div>
   </div>
+</div>
 
-  <!-- Login Modal -->
-  <div class="modal" id="loginModal" x-cloak x-show="showLogin" x-transition.opacity>
-    <div class="modal-content" x-transition.scale>
-      <h2>Sign in</h2>
-      <p class="muted small" style="margin-top:-6px">Create a new user or continue with an existing user ID.</p>
-
-      <div class="stack" style="text-align:left;margin-top:12px">
-        <div class="panel">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-weight:600">New here?</div>
-              <div class="muted small">We’ll create a new user and start you at lesson 1.</div>
-            </div>
-            <button class="btn" :disabled="creatingUser" @click="createNewUser()">
-              <span x-show="!creatingUser">Create new user</span>
-              <span x-show="creatingUser">Creating…</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div style="font-weight:600;margin-bottom:6px">Have a user ID?</div>
-          <div class="row">
-            <input class="input" style="max-width:220px" placeholder="e.g. 3" inputmode="numeric"
-                   x-model="loginExistingId" @keydown.enter.prevent="loginExisting()" />
-            <button class="btn secondary" @click="loginExisting()">Use this ID</button>
-          </div>
-        </div>
-
-        <div class="status err small" x-show="loginError" x-text="loginError"></div>
-      </div>
-    </div>
-  </div>
 
   <!-- deps -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -197,18 +162,10 @@
         // ====== Config ======
         API_BASE: "http://localhost:8000",
 
-        // ====== User/Auth State ======
-        userId: null,          // numeric ID
-        user: null,            // {user_id, active_lesson, lessons}
-        showLogin: false,
-        loginExistingId: '',
-        creatingUser: false,
-        loginError: '',
-
-        // ====== Lesson/Practice State ======
-        lessons: [],          // [{id,title,body_md}, ...] (ordered earliest->latest)
+        // ====== State ======
+        lessons: [],          // [{id,title,body_md}, ...]
         lessonIdx: 0,
-        problems: [],
+        problems: [],         // problems for current lesson
         problemIdx: 0,
         successCount: 0,
         selectedLessonId: null,
@@ -235,40 +192,17 @@
         get currentProblem(){ return this.problems[this.problemIdx] || null; },
         get cfgText(){ return this.getCfgText(this.allowNary, this.allowNeg); },
 
-        hasAccessToLesson(id){ return !!this.user?.lessons?.includes(Number(id)); },
-        nextLessonId(){
-          if(!this.lessons.length) return null;
-          const ordered = this.lessons.map(l=>l.id);
-          const curId = this.currentLesson?.id;
-          const i = ordered.indexOf(curId);
-          return (i>=0 && i<ordered.length-1) ? ordered[i+1] : null;
-        },
-
         // ====== Lifecycle ======
         async init(){
-          // Try load user from localStorage first
-          this.loadLocalUser();
-          if (this.userId){
-            try {
-              this.user = await this.getUser(this.userId);
-              await this.bootstrapLessons();
-            } catch (e){
-              console.warn('Stored user invalid, clearing.', e);
-              this.logout(true);
-              this.openLogin();
-            }
-          } else {
-            this.openLogin();
-          }
+          await this.bootstrap();
         },
 
-        async bootstrapLessons(){
+        async bootstrap(){
           try{
             this.lessons = await this.listLessons();
             if(this.lessons.length){
-              const preferredId = this.user?.active_lesson || this.lessons[0].id;
-              this.selectedLessonId = String(preferredId);
-              await this.setLessonById(preferredId);
+              this.selectedLessonId = String(this.lessons[0].id);
+              await this.setLessonByIndex(0);
             } else {
               this.setResult(false, 'No lessons found. Please add one in the database.');
             }
@@ -278,83 +212,7 @@
           }
         },
 
-        // ====== Backend I/O: Users ======
-        async createNewUser(){
-          this.loginError = '';
-          this.creatingUser = true;
-          try{
-            const res = await fetch(`${this.API_BASE}/users`, { method:'POST' });
-            if (!res.ok){
-              const text = await res.text().catch(()=> '');
-              throw new Error(text || `Failed to create user (${res.status})`);
-            }
-            const user = await res.json();
-            this.setUser(user);
-            this.closeLogin();
-            await this.bootstrapLessons();
-          } catch(e){
-            console.error(e);
-            this.loginError = e?.message || 'Failed to create user. Make sure at least one lesson exists.';
-          } finally {
-            this.creatingUser = false;
-          }
-        },
-        async loginExisting(){
-          this.loginError = '';
-          const id = Number(this.loginExistingId);
-          if (!Number.isInteger(id) || id <= 0){
-            this.loginError = 'Please enter a valid numeric user ID.';
-            return;
-          }
-          try{
-            const user = await this.getUser(id);
-            this.setUser(user);
-            this.closeLogin();
-            await this.bootstrapLessons();
-          } catch(e){
-            console.error(e);
-            this.loginError = e?.message || 'User not found.';
-          }
-        },
-        async getUser(id){
-          const res = await fetch(`${this.API_BASE}/users/${id}`);
-          if (!res.ok){
-            const text = await res.text().catch(()=> '');
-            throw new Error(text || `Failed to load user (${res.status})`);
-          }
-          return await res.json();
-        },
-        setUser(user){
-          this.user = user || null;
-          this.userId = user?.user_id || null;
-          if (this.userId){
-            localStorage.setItem('user_id', String(this.userId));
-          }
-        },
-        loadLocalUser(){
-          const raw = localStorage.getItem('user_id');
-          this.userId = raw ? Number(raw) : null;
-        },
-        logout(silent=false){
-          localStorage.removeItem('user_id');
-          this.user = null;
-          this.userId = null;
-          // Clear UI
-          this.answer = '';
-          this.problems = [];
-          this.lessons = [];
-          this.lessonIdx = 0;
-          this.problemIdx = 0;
-          if(!silent) this.openLogin();
-        },
-        openLogin(){
-          this.showLogin = true;
-          this.loginExistingId = '';
-          this.loginError = '';
-        },
-        closeLogin(){ this.showLogin = false; },
-
-        // ====== Backend I/O: Lessons/Problems/Validation/Attempts ======
+        // ====== Backend I/O ======
         async listLessons(){
           const res = await fetch(`${this.API_BASE}/lessons`);
           if(!res.ok) throw new Error('Failed to list lessons');
@@ -388,7 +246,6 @@
               method: 'POST',
               headers: {'Content-Type':'application/json'},
               body: JSON.stringify({
-                user_id: this.userId,               // send user ID to tie attempts to user
                 problem_id: problemId,
                 submitted_text: submission,
                 is_correct: !!backendResult.ok,
@@ -437,23 +294,18 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
         // ====== UI Actions ======
         async setLessonByIndex(newIdx){
           if (!this.lessons.length) return;
-          const idx = (newIdx + this.lessons.length) % this.lessons.length;
-          const target = this.lessons[idx];
+          this.lessonIdx = (newIdx + this.lessons.length) % this.lessons.length;
+          const current = this.lessons[this.lessonIdx];
+          this.selectedLessonId = String(current.id);
 
-          if (!this.hasAccessToLesson(target.id)){
-            this.setResult(false, '🔒 Next lesson is locked. Get 3 correct in a row to unlock.');
-            return;
-          }
-
-          this.lessonIdx = idx;
-          this.selectedLessonId = String(target.id);
-
-          const freshLesson = await this.loadLesson(target.id);
+          // Load latest lesson body
+          const freshLesson = await this.loadLesson(current.id);
           this.setLessonBody(this.cleanProblemText(freshLesson.body_md) || '');
 
-          this.problems = await this.loadProblems(target.id);
+          // Load problems
+          this.problems = await this.loadProblems(current.id);
           this.problemIdx = 0;
-          this.successCount = 0;
+          this.successCount = 0; // reset streak on lesson change
           this.showProblem();
         },
         async setLessonById(id){
@@ -473,7 +325,7 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
           this.clearAdvanceTimer();
           this.answer = '';
           this.hideResult();
-          this.$nextTick(()=> { if(!this.showLogin) this.$refs.answerInput?.focus(); });
+          this.$nextTick(()=> { this.$refs.answerInput?.focus(); });
         },
 
         prevProblem(){
@@ -491,7 +343,6 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
         },
 
         async check(){
-          if (this.showLogin) return;
           const input = (this.answer || '').trim();
           if(!input){ this.setResult(false, 'Type your answer first'); return; }
 
@@ -508,7 +359,7 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
               this.setResult(true, 'Correct!' + stage);
               this.successCount++;
 
-              // If third success, open modal asking to unlock the next lesson
+              // If third success, open modal asking to go to next lesson
               if (this.successCount >= 3){
                 this.openCongrats();
               }
@@ -517,7 +368,7 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
               if (this.advanceOnCorrect){
                 this.clearAdvanceTimer();
                 this.advanceTimerId = setTimeout(() => {
-                  if (!this.showModal && !this.showLogin) {
+                  if (!this.showModal) {
                     this.nextProblem();
                   }
                   this.clearAdvanceTimer();
@@ -530,7 +381,7 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
                 if (f && f.expr) msg += `\nFailed test: ${f.expr}`;
               }
               this.setResult(false, msg);
-              // If you want strict "in a row", uncomment the next line:
+              // Optionally reset streak here if you want strict "in a row":
               // this.successCount = 0;
             }
           } catch(e){
@@ -539,7 +390,6 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
         },
 
         reveal(){
-          if (this.showLogin) return;
           const ans = this.currentProblem?.answer_text || 'N/A';
           this.setResult(true, 'Answer: ' + ans);
         },
@@ -557,35 +407,14 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
         openCongrats(){ this.showModal = true; },
         closeCongrats(){ this.showModal = false; },
 
-        async confirmAdvanceLesson(){
+        confirmAdvanceLesson(){
+          // User chose to continue to next lesson
           this.closeCongrats();
-          if (!this.userId){ this.setResult(false, 'Please sign in first.'); return; }
-          try{
-            const res = await fetch(`${this.API_BASE}/users/${this.userId}/advance`, { method: 'POST' });
-            if(!res.ok){
-              const text = await res.text().catch(()=> '');
-              throw new Error(text || `Advance failed (${res.status})`);
-            }
-            const updated = await res.json();
-
-            // Update local user state
-            this.user = updated;
-            this.userId = updated.user_id;
-            localStorage.setItem('user_id', String(this.userId));
-
-            this.successCount = 0;
-
-            // Jump to newly activated lesson
-            if (updated.active_lesson){
-              await this.setLessonById(updated.active_lesson);
-              this.setResult(true, '✅ Next lesson unlocked!');
-            }
-          } catch(e){
-            this.setResult(false, e?.message || 'Could not advance to next lesson.');
-          }
+          this.successCount = 0; // reset for the new lesson
+          this.setLessonByIndex(this.lessonIdx + 1);
         },
-
         resetStreakAndStay(){
+          // User chose to stay in current lesson but reset streak
           this.successCount = 0;
           this.closeCongrats();
         },
