@@ -7,7 +7,7 @@
   <style>
     :root{
       --bg:#0b1020; --panel:#121935; --muted:#8ea0c6; --text:#e8eeff; --accent:#6aa6ff; --ok:#31d061; --err:#ff6b6b;
-      --radius:16px;
+      --radius:16px; --sticky-top: 86px;
     }
     *{box-sizing:border-box}
     body{margin:0;font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:linear-gradient(180deg,#0b1020,#0d1330 40%,#0e1738)}
@@ -38,26 +38,32 @@
     .small{font-size:12px}
     code{background:#0b1130;border:1px solid #2a3574;border-radius:8px;padding:1px 6px}
     .footer{padding:10px 16px;border-top:1px solid #1c2550;display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom-left-radius:var(--radius);border-bottom-right-radius:var(--radius)}
-    /* Modals */
+
+    @media (min-width: 981px){
+      #practiceCard{ position: sticky; top: var(--sticky-top); align-self: start; }
+    }
+
     .modal{
       display:flex; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%;
       background:rgba(0,0,0,.6); align-items:center; justify-content:center;
     }
     [x-cloak] { display: none !important; }
-    .modal-content{background:#121935;padding:20px;border-radius:16px;max-width:480px;text-align:center;border:1px solid #1c2550}
+    .modal-content{background:#121935;padding:20px;border-radius:16px;max-width:480px;text-align:center;border:1px solid #1c2550;outline:none}
     .modal-content h2{margin:4px 0 10px}
     .lesson-display {white-space: pre-wrap;background:#0e1430;border:1px solid #243067;border-radius:12px;padding:12px;color:var(--text);}
     .lesson-display p {margin: 0 0 0.5em;}
     .lesson-display code {font-family: monospace;background:#0b1130;border:1px solid #2a3574;border-radius:6px;padding:2px 4px;}
   </style>
 </head>
-<body x-data="app()" x-init="init()" @keydown.window.enter.prevent="if(!$event.shiftKey && !$event.ctrlKey){ if(!showLogin) check() }" @keydown.window.ctrl.enter.prevent="if(!showLogin) reveal()">
+<body x-data="app()" x-init="init()" 
+  @keydown.window.enter.prevent="if(!$event.shiftKey && !$event.ctrlKey){ if(!showLogin && !isRevealed) check() }" 
+  @keydown.window.ctrl.enter.prevent="if(!showLogin && !isRevealed) reveal()">
   <header>
     <h1>S-Expression Practice • Lesson + Validator</h1>
     <div class="row">
-      <span class="pill" x-show="userId">Signed in as <strong x-text="'#' + userId"></strong></span>
-      <button class="btn secondary" x-show="!userId" @click="openLogin()">Sign in</button>
-      <button class="btn secondary" x-show="userId" @click="logout()">Log out</button>
+      <span class="pill" x-show="username">Signed in as <strong x-text="username"></strong></span>
+      <button class="btn secondary" x-show="!username" @click="openLogin()">Sign in</button>
+      <button class="btn secondary" x-show="username" @click="logout()">Log out</button>
     </div>
   </header>
 
@@ -67,9 +73,6 @@
       <header>
         <div class="row" style="justify-content:space-between;align-items:center">
           <h2 style="margin:0;font-size:18px">Lesson</h2>
-          <div class="row">
-            <span class="pill">Tip: press <span class="kbd">Enter</span> on the right to check</span>
-          </div>
         </div>
         <div class="row" style="margin:10px 0 0">
           <!-- Lesson navigation -->
@@ -120,23 +123,24 @@
           <div class="panel">
             <div class="muted small">Problem</div>
             <div id="problemText" style="font-size:22px;margin-top:6px" x-text="currentProblem ? cleanProblemText(currentProblem.prompt_text) : 'No problems found for this lesson.'"></div>
+            <div class="pill" x-show="isRevealed" style="margin-top:10px">Revealed — answers for this problem won’t be accepted</div>
           </div>
 
           <label class="muted small" for="answerInput">Your answer</label>
-          <input id="answerInput" class="input" placeholder="e.g. (+ 5 4) or Racket code" autocomplete="off" x-model="answer" x-ref="answerInput" />
+          <input id="answerInput" class="input" placeholder="e.g. (+ 5 4) or Racket code" autocomplete="off" x-model="answer" x-ref="answerInput" :disabled="isRevealed" />
 
           <div class="row" style="justify-content:flex-start;gap:10px">
-            <button class="btn" id="checkBtn" @click="check">Check (Enter)</button>
-            <button class="btn secondary" id="revealBtn" @click="reveal">Reveal answer</button>
+            <button class="btn" id="checkBtn" :disabled="isRevealed" @click="check">Check (↵)</button>
+            <button class="btn secondary" id="revealBtn" :disabled="isRevealed" @click="reveal">Reveal (Ctrl + ↵)</button>
             <button class="btn secondary" id="shuffleBtn" x-show="false" @click="shuffle">Shuffle</button>
           </div>
 
           <div id="result" class="status" x-show="resultVisible" :class="resultOk ? 'ok' : 'err'" x-text="resultMessage"></div>
         </div>
       </div>
-      <div class="footer small muted">
-        <div>Keyboard: <span class="kbd">Enter</span> to check • <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> to reveal</div>
-      </div>
+      <!-- <div class="footer small muted">
+        <div>Keyboard: <span class="kbd">↵</span> to check • <span class="kbd">Ctrl</span> + <span class="kbd">↵</span> to reveal</div>
+      </div> -->
     </section>
   </main>
 
@@ -151,36 +155,35 @@
       </div>
     </div>
   </div>
+  <!-- Reveal Confirm Modal -->
+  <div class="modal" id="revealConfirmModal" x-cloak x-show="showRevealConfirm" x-transition.opacity>
+    <div class="modal-content" x-transition.scale tabindex="0"
+         @keydown.escape.prevent.stop="cancelReveal()"
+         @keydown.enter.prevent.stop="confirmReveal()">
+      <h2>Reveal answer?</h2>
+      <p class="muted small" style="margin-top:-6px">If you reveal, this problem will be skipped and we'll move to the next problem. It won’t count toward your streak.</p>
+      <div class="row" style="justify-content:center;margin-top:12px;gap:10px">
+        <button class="btn" @click="confirmReveal()">Reveal &amp; Skip to Next Problem</button>
+        <button class="btn secondary" @click="cancelReveal()">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- Login Modal -->
+  <!-- Login Modal (username-based) -->
   <div class="modal" id="loginModal" x-cloak x-show="showLogin" x-transition.opacity>
-    <div class="modal-content" x-transition.scale>
+    <div class="modal-content" x-transition.scale tabindex="0" 
+         @keydown.enter.stop.prevent="loginWithUsername()">
       <h2>Sign in</h2>
-      <p class="muted small" style="margin-top:-6px">Create a new user or continue with an existing user ID.</p>
+      <p class="muted small" style="margin-top:-6px">Enter a username to start or continue. We’ll create your account if it doesn’t exist.</p>
 
       <div class="stack" style="text-align:left;margin-top:12px">
         <div class="panel">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-weight:600">New here?</div>
-              <div class="muted small">We’ll create a new user and start you at lesson 1.</div>
-            </div>
-            <button class="btn" :disabled="creatingUser" @click="createNewUser()">
-              <span x-show="!creatingUser">Create new user</span>
-              <span x-show="creatingUser">Creating…</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div style="font-weight:600;margin-bottom:6px">Have a user ID?</div>
           <div class="row">
-            <input class="input" style="max-width:220px" placeholder="e.g. 3" inputmode="numeric"
-                   x-model="loginExistingId" @keydown.enter.prevent="loginExisting()" />
-            <button class="btn secondary" @click="loginExisting()">Use this ID</button>
+            <input class="input" style="flex:1" placeholder="Your username (e.g. alice)"
+                   x-model="loginUsername" />
+            <button class="btn secondary" @click="loginWithUsername()">Continue</button>
           </div>
         </div>
-
         <div class="status err small" x-show="loginError" x-text="loginError"></div>
       </div>
     </div>
@@ -197,13 +200,14 @@
         // ====== Config ======
         API_BASE: "http://localhost:8000",
 
-        // ====== User/Auth State ======
-        userId: null,          // numeric ID
-        user: null,            // {user_id, active_lesson, lessons}
+        // ====== User/Auth State (username-first) ======
+        username: null,        // string
+        userId: null,          // numeric id returned by backend; kept internally
+        user: null,            // {user_id, username, active_lesson, lessons}
         showLogin: false,
-        loginExistingId: '',
-        creatingUser: false,
+        loginUsername: '',
         loginError: '',
+        creatingUser: false,   // not used but kept for parity
 
         // ====== Lesson/Practice State ======
         lessons: [],          // [{id,title,body_md}, ...] (ordered earliest->latest)
@@ -220,10 +224,12 @@
         allowNary: false,
         allowNeg: false,
         showModal: false,
+        showRevealConfirm: false,
+        revealedById: {},     // { [problemId]: true }
 
         // Auto-advance per problem
         advanceOnCorrect: true,
-        advanceDelayMs: 900,
+        advanceDelayMs: 3000,
         advanceTimerId: null,
         clearAdvanceTimer(){
           if (this.advanceTimerId){ clearTimeout(this.advanceTimerId); this.advanceTimerId = null; }
@@ -234,6 +240,7 @@
         get currentLesson(){ return this.lessons[this.lessonIdx] || null; },
         get currentProblem(){ return this.problems[this.problemIdx] || null; },
         get cfgText(){ return this.getCfgText(this.allowNary, this.allowNeg); },
+        get isRevealed(){ return !!(this.currentProblem && this.revealedById[this.currentProblem.id]); },
 
         hasAccessToLesson(id){ return !!this.user?.lessons?.includes(Number(id)); },
         nextLessonId(){
@@ -246,14 +253,26 @@
 
         // ====== Lifecycle ======
         async init(){
+          // compute sticky top from header height
+          try{
+            const h = document.querySelector('header');
+            if (h){
+              document.documentElement.style.setProperty('--sticky-top', (h.offsetHeight + 12) + 'px');
+              new ResizeObserver(() => {
+                document.documentElement.style.setProperty('--sticky-top', (h.offsetHeight + 12) + 'px');
+              }).observe(h);
+            }
+          }catch(e){ /* noop */ }
+
           // Try load user from localStorage first
           this.loadLocalUser();
-          if (this.userId){
+          if (this.username){
             try {
-              this.user = await this.getUser(this.userId);
+              this.user = await this.getUserByUsername(this.username);
+              this.userId = this.user?.user_id || null;
               await this.bootstrapLessons();
             } catch (e){
-              console.warn('Stored user invalid, clearing.', e);
+              console.warn('Stored username invalid, clearing.', e);
               this.logout(true);
               this.openLogin();
             }
@@ -278,15 +297,23 @@
           }
         },
 
-        // ====== Backend I/O: Users ======
-        async createNewUser(){
+        // ====== Backend I/O: Users (username-first) ======
+        async loginWithUsername(){
           this.loginError = '';
-          this.creatingUser = true;
+          const uname = (this.loginUsername || '').trim();
+          if (!uname){
+            this.loginError = 'Please enter a username.';
+            return;
+          }
           try{
-            const res = await fetch(`${this.API_BASE}/users`, { method:'POST' });
+            const res = await fetch(`${this.API_BASE}/login`, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ username: uname })
+            });
             if (!res.ok){
               const text = await res.text().catch(()=> '');
-              throw new Error(text || `Failed to create user (${res.status})`);
+              throw new Error(text || `Login failed (${res.status})`);
             }
             const user = await res.json();
             this.setUser(user);
@@ -294,50 +321,35 @@
             await this.bootstrapLessons();
           } catch(e){
             console.error(e);
-            this.loginError = e?.message || 'Failed to create user. Make sure at least one lesson exists.';
-          } finally {
-            this.creatingUser = false;
+            this.loginError = e?.message || 'Failed to log in.';
           }
         },
-        async loginExisting(){
-          this.loginError = '';
-          const id = Number(this.loginExistingId);
-          if (!Number.isInteger(id) || id <= 0){
-            this.loginError = 'Please enter a valid numeric user ID.';
-            return;
-          }
-          try{
-            const user = await this.getUser(id);
-            this.setUser(user);
-            this.closeLogin();
-            await this.bootstrapLessons();
-          } catch(e){
-            console.error(e);
-            this.loginError = e?.message || 'User not found.';
-          }
-        },
-        async getUser(id){
-          const res = await fetch(`${this.API_BASE}/users/${id}`);
+
+        async getUserByUsername(uname){
+          const res = await fetch(`${this.API_BASE}/users/by-username/${encodeURIComponent(uname)}`);
           if (!res.ok){
             const text = await res.text().catch(()=> '');
             throw new Error(text || `Failed to load user (${res.status})`);
           }
           return await res.json();
         },
+
         setUser(user){
           this.user = user || null;
+          this.username = user?.username || null;
           this.userId = user?.user_id || null;
-          if (this.userId){
-            localStorage.setItem('user_id', String(this.userId));
+          if (this.username){
+            localStorage.setItem('username', this.username);
           }
         },
         loadLocalUser(){
-          const raw = localStorage.getItem('user_id');
-          this.userId = raw ? Number(raw) : null;
+          const raw = localStorage.getItem('username');
+          this.username = raw || null;
         },
         logout(silent=false){
-          localStorage.removeItem('user_id');
+          localStorage.removeItem('username');
           this.user = null;
+          this.username = null;
           this.userId = null;
           // Clear UI
           this.answer = '';
@@ -349,8 +361,12 @@
         },
         openLogin(){
           this.showLogin = true;
-          this.loginExistingId = '';
+          this.loginUsername = this.username || '';
           this.loginError = '';
+          this.$nextTick(() => {
+            const el = document.querySelector('#loginModal .modal-content');
+            el && el.focus && el.focus();
+          });
         },
         closeLogin(){ this.showLogin = false; },
 
@@ -383,12 +399,13 @@
           return await res.json();
         },
         async recordAttempt(problemId, submission, backendResult){
+          if (!this.username) return;
           try{
             await fetch(`${this.API_BASE}/attempts`, {
               method: 'POST',
               headers: {'Content-Type':'application/json'},
               body: JSON.stringify({
-                user_id: this.userId,               // send user ID to tie attempts to user
+                username: this.username,           // username-first
                 problem_id: problemId,
                 submitted_text: submission,
                 is_correct: !!backendResult.ok,
@@ -492,6 +509,7 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
 
         async check(){
           if (this.showLogin) return;
+          if (this.isRevealed){ this.setResult(false, 'You revealed this one. Try the next problem.'); return; }
           const input = (this.answer || '').trim();
           if(!input){ this.setResult(false, 'Type your answer first'); return; }
 
@@ -508,12 +526,10 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
               this.setResult(true, 'Correct!' + stage);
               this.successCount++;
 
-              // If third success, open modal asking to unlock the next lesson
               if (this.successCount >= 3){
                 this.openCongrats();
               }
 
-              // Auto-advance to the next problem unless modal is open
               if (this.advanceOnCorrect){
                 this.clearAdvanceTimer();
                 this.advanceTimerId = setTimeout(() => {
@@ -530,7 +546,7 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
                 if (f && f.expr) msg += `\nFailed test: ${f.expr}`;
               }
               this.setResult(false, msg);
-              // If you want strict "in a row", uncomment the next line:
+              // For strict "in a row", you could reset:
               // this.successCount = 0;
             }
           } catch(e){
@@ -540,8 +556,25 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
 
         reveal(){
           if (this.showLogin) return;
-          const ans = this.currentProblem?.answer_text || 'N/A';
-          this.setResult(true, 'Answer: ' + ans);
+          if (this.isRevealed) return;
+          this.openRevealConfirm();
+        },
+
+        openRevealConfirm(){ this.showRevealConfirm = true; this.$nextTick(()=> { document.querySelector('#revealConfirmModal .modal-content')?.focus(); }); },
+        cancelReveal(){ this.showRevealConfirm = false; },
+        async confirmReveal(){
+          this.showRevealConfirm = false;
+          const p = this.currentProblem;
+          const ans = p?.answer_text || 'N/A';
+          if (p){ this.revealedById[p.id] = true; }
+          this.setResult(true, 'Answer: ' + ans + ' — (This problem is marked as revealed and won’t count toward your streak)');
+          this.clearAdvanceTimer();
+          this.advanceTimerId = setTimeout(() => {
+            if (!this.showModal && !this.showLogin) {
+              this.nextProblem();
+            }
+            this.clearAdvanceTimer();
+          }, this.advanceDelayMs);
         },
 
         shuffle(){
@@ -559,9 +592,10 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
 
         async confirmAdvanceLesson(){
           this.closeCongrats();
-          if (!this.userId){ this.setResult(false, 'Please sign in first.'); return; }
+          if (!this.username){ this.setResult(false, 'Please sign in first.'); return; }
           try{
-            const res = await fetch(`${this.API_BASE}/users/${this.userId}/advance`, { method: 'POST' });
+            // Use username-based advance endpoint
+            const res = await fetch(`${this.API_BASE}/users/by-username/${encodeURIComponent(this.username)}/advance`, { method: 'POST' });
             if(!res.ok){
               const text = await res.text().catch(()=> '');
               throw new Error(text || `Advance failed (${res.status})`);
@@ -570,15 +604,16 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
 
             // Update local user state
             this.user = updated;
+            this.username = updated.username;
             this.userId = updated.user_id;
-            localStorage.setItem('user_id', String(this.userId));
+            localStorage.setItem('username', this.username);
 
             this.successCount = 0;
 
             // Jump to newly activated lesson
             if (updated.active_lesson){
               await this.setLessonById(updated.active_lesson);
-              this.setResult(true, '✅ Next lesson unlocked!');
+              this.setResult(true, 'Next lesson unlocked!');
             }
           } catch(e){
             this.setResult(false, e?.message || 'Could not advance to next lesson.');

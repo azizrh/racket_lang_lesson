@@ -257,6 +257,7 @@ CREATE TABLE public."user" (
     active_lesson bigint,
     lessons bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    username text NOT NULL,
     CONSTRAINT user_active_in_lessons_chk CHECK (((active_lesson IS NULL) OR (active_lesson = ANY (lessons))))
 );
 
@@ -317,29 +318,9 @@ ALTER TABLE ONLY public."user" ALTER COLUMN user_id SET DEFAULT nextval('public.
 --
 
 COPY public.attempt (id, problem_id, submitted_text, is_correct, stage, error_reason, details_json, created_at, user_id) FROM stdin;
-10	11	(- 18 6)	t	eval	\N	{"tests": 0, "value": 12, "passed": 0, "results": []}	2025-08-20 09:25:49.694502+00	\N
-11	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"pass": true, "type": "expect", "index": 0, "actual": 9, "expected": 9}]}	2025-08-20 09:26:37.947569+00	\N
-12	7	(+ 7 (* 8 2))	t	eval	\N	{"tests": 0, "value": 23, "passed": 0, "results": []}	2025-08-20 09:26:57.327784+00	\N
-13	41	(+ 7 3)	t	eval	\N	{"tests": 1, "value": 10, "passed": 1, "results": [{"expr": "(+ 7 3)", "pass": true, "type": "expr", "index": 0, "actual": 10, "exprValue": 10}]}	2025-08-21 06:31:18.908736+00	\N
-15	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:35:17.442029+00	\N
-14	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:35:17.443146+00	\N
-16	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:42:28.501606+00	\N
-17	2	(- 22 9)	t	eval	\N	{"tests": 1, "value": 13, "passed": 1, "results": [{"expr": "(- 22 9)", "pass": true, "type": "expr", "index": 0, "actual": 13, "exprValue": 13}]}	2025-08-21 08:42:34.902065+00	\N
-18	3	(* 2 24)	t	eval	\N	{"tests": 1, "value": 48, "passed": 1, "results": [{"expr": "(* 2 24)", "pass": true, "type": "expr", "index": 0, "actual": 48, "exprValue": 48}]}	2025-08-21 08:42:44.417519+00	\N
-19	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:53:56.678665+00	\N
-20	2	(- 22 9)	t	eval	\N	{"tests": 1, "value": 13, "passed": 1, "results": [{"expr": "(- 22 9)", "pass": true, "type": "expr", "index": 0, "actual": 13, "exprValue": 13}]}	2025-08-21 08:54:03.180769+00	\N
-21	3	(* 2 24)	t	eval	\N	{"tests": 1, "value": 48, "passed": 1, "results": [{"expr": "(* 2 24)", "pass": true, "type": "expr", "index": 0, "actual": 48, "exprValue": 48}]}	2025-08-21 08:54:09.529296+00	\N
-22	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 08:57:40.964917+00	\N
-23	2	(- 22 9)	t	eval	\N	{"tests": 1, "value": 13, "passed": 1, "results": [{"expr": "(- 22 9)", "pass": true, "type": "expr", "index": 0, "actual": 13, "exprValue": 13}]}	2025-08-21 08:57:45.646305+00	\N
-24	3	(* 2 24)	t	eval	\N	{"tests": 1, "value": 48, "passed": 1, "results": [{"expr": "(* 2 24)", "pass": true, "type": "expr", "index": 0, "actual": 48, "exprValue": 48}]}	2025-08-21 08:57:50.80939+00	\N
-25	41	(+ 7 3)	t	eval	\N	{"tests": 1, "value": 10, "passed": 1, "results": [{"expr": "(+ 7 3)", "pass": true, "type": "expr", "index": 0, "actual": 10, "exprValue": 10}]}	2025-08-21 09:07:38.479057+00	\N
-26	42	(* 9 4)	t	eval	\N	{"tests": 1, "value": 36, "passed": 1, "results": [{"expr": "(* 9 4)", "pass": true, "type": "expr", "index": 0, "actual": 36, "exprValue": 36}]}	2025-08-21 09:11:11.396737+00	\N
-27	61	(+ 4 7)	t	eval	\N	{"tests": 1, "value": 11, "passed": 1, "results": [{"expr": "(+ 4 7)", "pass": true, "type": "expr", "index": 0, "actual": 11, "exprValue": 11}]}	2025-08-21 09:29:49.495194+00	\N
-28	62	(- 12 3)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(- 12 3)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-21 09:29:55.153015+00	\N
-29	63	(* 8 9)	t	eval	\N	{"tests": 1, "value": 72, "passed": 1, "results": [{"expr": "(* 8 9)", "pass": true, "type": "expr", "index": 0, "actual": 72, "exprValue": 72}]}	2025-08-21 09:30:00.966302+00	\N
-30	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-25 06:40:32.999786+00	1
-31	2	(- 22 9)	t	eval	\N	{"tests": 1, "value": 13, "passed": 1, "results": [{"expr": "(- 22 9)", "pass": true, "type": "expr", "index": 0, "actual": 13, "exprValue": 13}]}	2025-08-25 06:40:40.239882+00	1
-32	3	(* 2 24)	t	eval	\N	{"tests": 1, "value": 48, "passed": 1, "results": [{"expr": "(* 2 24)", "pass": true, "type": "expr", "index": 0, "actual": 48, "exprValue": 48}]}	2025-08-25 06:40:57.047995+00	1
+37	1	(+ 5 4)	t	eval	\N	{"tests": 1, "value": 9, "passed": 1, "results": [{"expr": "(+ 5 4)", "pass": true, "type": "expr", "index": 0, "actual": 9, "exprValue": 9}]}	2025-08-26 04:35:38.443412+00	4
+38	2	(- 22 9)	t	eval	\N	{"tests": 1, "value": 13, "passed": 1, "results": [{"expr": "(- 22 9)", "pass": true, "type": "expr", "index": 0, "actual": 13, "exprValue": 13}]}	2025-08-26 04:36:07.372047+00	4
+39	3	(* 2 24)	t	eval	\N	{"tests": 1, "value": 48, "passed": 1, "results": [{"expr": "(* 2 24)", "pass": true, "type": "expr", "index": 0, "actual": 48, "exprValue": 48}]}	2025-08-26 04:36:14.157703+00	4
 \.
 
 
@@ -488,8 +469,8 @@ COPY public.problem (id, lesson_id, prompt_text, answer_text, created_at, valida
 -- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public."user" (user_id, active_lesson, lessons, created_at) FROM stdin;
-1	2	{1,2}	2025-08-25 06:18:06.60384+00
+COPY public."user" (user_id, active_lesson, lessons, created_at, username) FROM stdin;
+4	2	{1,2}	2025-08-26 04:32:37.857613+00	aziz
 \.
 
 
@@ -497,7 +478,7 @@ COPY public."user" (user_id, active_lesson, lessons, created_at) FROM stdin;
 -- Name: attempt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.attempt_id_seq', 32, true);
+SELECT pg_catalog.setval('public.attempt_id_seq', 39, true);
 
 
 --
@@ -518,7 +499,7 @@ SELECT pg_catalog.setval('public.problem_id_seq', 120, true);
 -- Name: user_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_user_id_seq', 1, true);
+SELECT pg_catalog.setval('public.user_user_id_seq', 4, true);
 
 
 --
@@ -559,6 +540,14 @@ ALTER TABLE ONLY public.problem
 
 ALTER TABLE ONLY public."user"
     ADD CONSTRAINT user_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: user user_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."user"
+    ADD CONSTRAINT user_username_key UNIQUE (username);
 
 
 --
