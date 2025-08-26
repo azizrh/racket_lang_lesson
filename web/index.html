@@ -4,97 +4,170 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>S-Expression Practice</title>
+
+  <!-- Tailwind for layout utilities (CDN for convenience) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
+    /* =====================
+       shadcn-inspired tokens (grayscale)
+       ===================== */
     :root{
-      --bg:#0b1020; --panel:#121935; --muted:#8ea0c6; --text:#e8eeff; --accent:#6aa6ff; --ok:#31d061; --err:#ff6b6b;
-      --radius:16px; --sticky-top: 86px;
+      /* HSL values only; we use them via hsl(var(--token)) */
+      --background: 0 0% 6%;      /* ~#0f0f0f */
+      --foreground: 0 0% 96%;     /* ~#f5f5f5 */
+      --muted-foreground: 0 0% 65%;
+      --card: 0 0% 9%;            /* ~#171717 */
+      --popover: 0 0% 10%;
+      --border: 0 0% 20%;
+      --input: 0 0% 22%;
+      --ring: 0 0% 45%;
+      --radius: 16px;
+      --sticky-top: 86px;         /* computed on init */
     }
+
+    /* Base */
     *{box-sizing:border-box}
-    body{margin:0;font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:linear-gradient(180deg,#0b1020,#0d1330 40%,#0e1738)}
-    header{padding:20px 24px;border-bottom:1px solid #1c2550;background:rgba(0,0,0,.2);backdrop-filter: blur(6px);position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:12px}
-    header h1{margin:0;font-size:20px;letter-spacing:.3px}
-    main{display:grid;gap:18px;padding:18px;grid-template-columns: 1fr 1fr;align-items:start}
-    @media (max-width: 980px){main{grid-template-columns:1fr}}
-    .card{background:var(--panel);border:1px solid #1c2550;border-radius:var(--radius);box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    .card header{position:static;background:transparent;border:0;padding:16px 16px 0}
-    .card .content{padding:16px}
-    .muted{color:var(--muted)}
-    textarea,input,select,button{font:inherit;color:inherit}
-    textarea{width:100%;min-height:300px;background:#0e1430;border:1px solid #243067;border-radius:12px;padding:12px;color:var(--text)}
-    select{background:#0e1430;border:1px solid #243067;border-radius:12px;padding:8px 10px;color:var(--text)}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .stack{display:grid;gap:12px}
-    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid #26306a;background:#0f1636;border-radius:999px;font-size:12px;color:var(--muted)}
-    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;background:#0b1130;border:1px solid #2a3574;border-bottom-width:2px;border-radius:6px;padding:2px 6px;color:#cfe2ff}
-    .panel{background:#0e1430;border:1px dashed #2a3574;border-radius:12px;padding:12px}
-    .input{width:100%;background:#0e1430;border:1px solid #243067;border-radius:12px;padding:12px}
-    .btn{background:linear-gradient(180deg,#2563eb,#1d4ed8);border:0;color:white;padding:10px 14px;border-radius:12px;cursor:pointer;transition:.15s transform, .2s filter;box-shadow:0 6px 18px rgba(37,99,235,.3)}
-    .btn.secondary{background:#0f1636;border:1px solid #2a3574;color:#cfe2ff;box-shadow:none}
-    .btn:active{transform:translateY(1px)}
-    .btn[disabled]{opacity:.6;cursor:not-allowed}
-    .status{border-radius:12px;padding:12px}
-    .status.ok{background:rgba(49,208,97,.1);border:1px solid rgba(49,208,97,.35)}
-    .status.err{background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.35)}
-    .small{font-size:12px}
-    code{background:#0b1130;border:1px solid #2a3574;border-radius:8px;padding:1px 6px}
-    .footer{padding:10px 16px;border-top:1px solid #1c2550;display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom-left-radius:var(--radius);border-bottom-right-radius:var(--radius)}
+    body{
+      margin:0;
+      font:16px/1.5 system-ui, Segoe UI, Roboto, Helvetica, Arial;
+      color: hsl(var(--foreground));
+      background:
+        radial-gradient(1200px 600px at 70% -10%, rgba(255,255,255,0.04), transparent),
+        linear-gradient(180deg, hsl(var(--background)), hsl(0 0% 8%) 40%, hsl(0 0% 10%));
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* Header */
+    header{
+      position:sticky; top:0; z-index:50;
+      border-bottom:1px solid hsl(var(--border));
+      background: rgba(0,0,0,.25);
+      backdrop-filter: blur(8px);
+    }
+    header .wrap{ display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:18px 20px; max-width: 1100px; margin: 0 auto; }
+    header h1{ margin:0; font-size:15px; letter-spacing:.25px; color: hsl(var(--muted-foreground)); font-weight:600; }
+
+    /* Layout */
+    main{ display:grid; gap:18px; padding:18px; grid-template-columns: 1fr 1fr; align-items:start; max-width:1100px; margin:0 auto; }
+    @media (max-width: 980px){ main{ grid-template-columns:1fr } }
+    header .wrap,
+    main { max-width: min(92rem, 95vw); }  /* ~1472px or 95% of viewport */
+
+    /* Card */
+    .card{ background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:var(--radius); box-shadow:0 10px 30px rgba(0,0,0,.35); }
+    .card header{ position:static; background:transparent; border:0; padding:16px 16px 0 }
+    .card .content{ padding:16px }
+
+    /* Text helpers */
+    .muted{ color: hsl(var(--muted-foreground)); }
+    .small{ font-size:12px }
+    .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:hsl(0 0% 10%); border:1px solid hsl(var(--border)); border-bottom-width:2px; border-radius:6px; padding:2px 6px; color:hsl(var(--foreground)); }
+
+    /* Inputs */
+    textarea, input, select, button { font: inherit; color: inherit; }
+    textarea, .input{
+      width:100%; min-height: unset;
+      background:hsl(0 0% 8%);
+      border:1px solid hsl(var(--input));
+      border-radius:12px; padding:12px; color: hsl(var(--foreground));
+    }
+    textarea{ min-height:300px }
+    select{
+      background:hsl(0 0% 8%);
+      min-height:50px;
+      text-align-last: left;
+      /* text-indent: 8px; */
+      border:3px solid hsl(var(--input));
+      border-radius:10px; padding:8px 16px 8px 16px; color:hsl(var(--foreground));
+    }
+    .input:focus, textarea:focus, select:focus { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+
+    /* Badges/Pills */
+    .pill{ display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border:1px solid hsl(var(--border)); background:hsl(0 0% 8%); border-radius:999px; font-size:12px; color:hsl(var(--muted-foreground)); }
+
+    /* Panels */
+    .panel{ background:hsl(0 0% 8%); border:1px dashed hsl(var(--input)); border-radius:12px; padding:12px }
+
+    /* Buttons (shadcn-like: primary / ghost) */
+    .btn{ display:inline-flex; align-items:center; gap:.5rem; border-radius:12px; padding:10px 14px; cursor:pointer; border:1px solid hsl(var(--border)); transition: transform .15s ease, background-color .2s ease, border-color .2s ease, opacity .2s ease; }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ opacity:.6; cursor:not-allowed }
+    .btn:focus-visible{ outline:2px solid hsl(var(--ring)); outline-offset:2px; }
+
+    /* primary = high-contrast */
+    .btn.primary{ background: hsl(var(--foreground)); color: hsl(var(--background)); border-color: hsl(0 0% 80%); }
+    .btn.primary:hover{ background: hsl(0 0% 92%); }
+
+    /* secondary (ghost) */
+    .btn.secondary{ background: hsl(0 0% 10%); color: hsl(var(--foreground)); border-color: hsl(var(--input)); }
+    .btn.secondary:hover{ background: hsl(0 0% 12%); }
+
+    /* Status (monochrome) */
+    .status{ border-radius:12px; padding:12px; border:1px solid hsl(var(--border)); background:hsl(0 0% 10%); }
+    .status.ok{ /* keep monochrome; success icon comes from text */ }
+    .status.err{ /* same base; relies on ❌ prefix */ }
+
+    code{ background:hsl(0 0% 10%); border:1px solid hsl(var(--border)); border-radius:8px; padding:1px 6px }
+
+    .footer{ padding:10px 16px; border-top:1px solid hsl(var(--border)); display:flex; justify-content:space-between; align-items:center; gap:8px; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius) }
 
     @media (min-width: 981px){
       #practiceCard{ position: sticky; top: var(--sticky-top); align-self: start; }
     }
 
-    .modal{
-      display:flex; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%;
-      background:rgba(0,0,0,.6); align-items:center; justify-content:center;
-    }
+    /* Modal */
+    .modal{ display:flex; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,.6); align-items:center; justify-content:center; padding: 16px; }
     [x-cloak] { display: none !important; }
-    .modal-content{background:#121935;padding:20px;border-radius:16px;max-width:480px;text-align:center;border:1px solid #1c2550;outline:none}
-    .modal-content h2{margin:4px 0 10px}
-    .lesson-display {white-space: pre-wrap;background:#0e1430;border:1px solid #243067;border-radius:12px;padding:12px;color:var(--text);}
-    .lesson-display p {margin: 0 0 0.5em;}
-    .lesson-display code {font-family: monospace;background:#0b1130;border:1px solid #2a3574;border-radius:6px;padding:2px 4px;}
+    .modal-content{ background:hsl(var(--card)); padding:20px; border-radius:16px; max-width:520px; width:100%; text-align:center; border:1px solid hsl(var(--border)); outline:none; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+    .modal-content h2{ margin:4px 0 10px }
+
+    /* Lesson text */
+    .lesson-display { white-space: pre-wrap; background:hsl(0 0% 8%); border:1px solid hsl(var(--input)); border-radius:12px; padding:12px; color: hsl(var(--foreground)); }
+    .lesson-display p { margin: 0 0 0.5em; }
+    .lesson-display code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:hsl(0 0% 10%); border:1px solid hsl(var(--border)); border-radius:6px; padding:2px 4px; }
   </style>
 </head>
-<body x-data="app()" x-init="init()" 
-  @keydown.window.enter.prevent="if(!$event.shiftKey && !$event.ctrlKey){ if(!showLogin && !isRevealed) check() }" 
+<body x-data="app()" x-init="init()"
+  @keydown.window.enter.prevent="if(!$event.shiftKey && !$event.ctrlKey){ if(!showLogin && !isRevealed) check() }"
   @keydown.window.ctrl.enter.prevent="if(!showLogin && !isRevealed) reveal()">
+
+  <!-- Header -->
   <header>
-    <h1>S-Expression Practice • Lesson + Validator</h1>
-    <div class="row">
-      <span class="pill" x-show="username">Signed in as <strong x-text="username"></strong></span>
-      <button class="btn secondary" x-show="!username" @click="openLogin()">Sign in</button>
-      <button class="btn secondary" x-show="username" @click="logout()">Log out</button>
+    <div class="wrap">
+      <h1>S-Expression Practice • Lesson + Validator</h1>
+      <div class="flex items-center gap-2">
+        <span class="pill" x-show="username">Signed in as <strong x-text="username"></strong></span>
+        <button class="btn secondary" x-show="!username" @click="openLogin()">Sign in</button>
+        <button class="btn secondary" x-show="username" @click="logout()">Log out</button>
+      </div>
     </div>
   </header>
 
+  <!-- Main -->
   <main :style="showLogin ? 'filter: blur(2px); pointer-events:none; user-select:none;' : ''">
     <!-- LEFT: Lesson text -->
     <section class="card" id="lessonCard">
       <header>
-        <div class="row" style="justify-content:space-between;align-items:center">
-          <h2 style="margin:0;font-size:18px">Lesson</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="m-0 text-[18px] font-semibold">Lesson</h2>
         </div>
-        <div class="row" style="margin:10px 0 0">
+        <div class="flex items-center gap-2 mt-2">
           <!-- Lesson navigation -->
           <button class="btn secondary" id="lessonPrevBtn" :disabled="!hasMultipleLessons" @click="setLessonByIndex(lessonIdx - 1)">◀ Prev lesson</button>
           <select id="lessonSelect" aria-label="Choose lesson" x-model="selectedLessonId" @change="setLessonById(selectedLessonId)">
             <template x-for="l in lessons" :key="l.id">
-              <option
-                :value="String(l.id)"
-                :disabled="!hasAccessToLesson(l.id)"
-                x-text="(hasAccessToLesson(l.id) ? '' : '🔒 ') + `${l.title} (ID ${l.id})`">
-              </option>
+              <option :value="String(l.id)" :disabled="!hasAccessToLesson(l.id)" x-text="(hasAccessToLesson(l.id) ? '' : '🔒 ') + `${l.title} (ID ${l.id})`"></option>
             </template>
           </select>
-          <button class="btn secondary" id="lessonNextBtn"
-            :disabled="!hasMultipleLessons || !hasAccessToLesson(nextLessonId())"
-            @click="setLessonByIndex(lessonIdx + 1)">Next lesson ▶</button>
+          <button class="btn secondary" id="lessonNextBtn" :disabled="!hasMultipleLessons || !hasAccessToLesson(nextLessonId())" @click="setLessonByIndex(lessonIdx + 1)">Next lesson ▶</button>
         </div>
       </header>
       <div class="content">
-        <div class="stack">
+        <div class="grid gap-3">
           <div id="lessonText" class="lesson-display" x-html="lessonBodyHtml"></div>
-          <div class="row" style="justify-content:flex-end">
+          <div class="flex justify-end">
             <button class="btn secondary" id="refreshLessonBtn" hidden @click="refreshLesson()">Refresh from server</button>
           </div>
         </div>
@@ -104,17 +177,17 @@
     <!-- RIGHT: Problems & validator -->
     <section class="card" id="practiceCard">
       <header>
-        <h2 style="margin:0 0 6px 0;font-size:18px">Problems & Validator</h2>
+        <h2 class="m-0 mb-1 text-[18px] font-semibold">Problems &amp; Validator</h2>
         <div class="muted small" x-show="false">Your answer is validated by the backend (CFG or Racket), based on the lesson/problem config.</div>
       </header>
       <div class="content">
-        <div class="stack">
-          <div class="row" style="justify-content:space-between;align-items:center" x-show="false">
-            <div class="row" style="gap:16px" hidden>
+        <div class="grid gap-3">
+          <div class="flex items-center justify-between" x-show="false">
+            <div class="flex gap-4" hidden>
               <label class="pill" hidden><input type="checkbox" id="naryToggle" x-model="allowNary"  /> Allow n-ary (≥2 operands)</label>
               <label class="pill" hidden><input type="checkbox" id="allowNeg" x-model="allowNeg"/> Allow negative integers</label>
             </div>
-            <div class="row">
+            <div class="flex items-center gap-2">
               <button class="btn secondary" id="prevBtn" @click="prevProblem()">◀ Prev</button>
               <button class="btn secondary" id="nextBtn" @click="nextProblem()">Next ▶</button>
             </div>
@@ -122,15 +195,15 @@
 
           <div class="panel">
             <div class="muted small">Problem</div>
-            <div id="problemText" style="font-size:22px;margin-top:6px" x-text="currentProblem ? cleanProblemText(currentProblem.prompt_text) : 'No problems found for this lesson.'"></div>
-            <div class="pill" x-show="isRevealed" style="margin-top:10px">Revealed — answers for this problem won’t be accepted</div>
+            <div id="problemText" class="mt-1 text-[22px]" x-text="currentProblem ? cleanProblemText(currentProblem.prompt_text) : 'No problems found for this lesson.'"></div>
+            <div class="pill mt-2" x-show="isRevealed">Revealed — answers for this problem won’t be accepted</div>
           </div>
 
           <label class="muted small" for="answerInput">Your answer</label>
           <input id="answerInput" class="input" placeholder="e.g. (+ 5 4) or Racket code" autocomplete="off" x-model="answer" x-ref="answerInput" :disabled="isRevealed" />
 
-          <div class="row" style="justify-content:flex-start;gap:10px">
-            <button class="btn" id="checkBtn" :disabled="isRevealed" @click="check">Check (↵)</button>
+          <div class="flex items-center gap-2">
+            <button class="btn primary" id="checkBtn" :disabled="isRevealed" @click="check">Check (↵)</button>
             <button class="btn secondary" id="revealBtn" :disabled="isRevealed" @click="reveal">Reveal (Ctrl + ↵)</button>
             <button class="btn secondary" id="shuffleBtn" x-show="false" @click="shuffle">Shuffle</button>
           </div>
@@ -138,9 +211,6 @@
           <div id="result" class="status" x-show="resultVisible" :class="resultOk ? 'ok' : 'err'" x-text="resultMessage"></div>
         </div>
       </div>
-      <!-- <div class="footer small muted">
-        <div>Keyboard: <span class="kbd">↵</span> to check • <span class="kbd">Ctrl</span> + <span class="kbd">↵</span> to reveal</div>
-      </div> -->
     </section>
   </main>
 
@@ -149,21 +219,20 @@
     <div class="modal-content" x-transition.scale>
       <h2>🎉 Congratulations!</h2>
       <p>You solved 3 problems correctly in a row!</p>
-      <div class="row" style="justify-content:center;margin-top:12px;gap:10px">
-        <button class="btn" id="keepGoingBtn" @click="confirmAdvanceLesson()">Unlock next lesson</button>
+      <div class="flex justify-center gap-2 mt-3">
+        <button class="btn primary" id="keepGoingBtn" @click="confirmAdvanceLesson()">Unlock next lesson</button>
         <button class="btn secondary" id="resetCounterBtn" @click="resetStreakAndStay()">Stay &amp; reset</button>
       </div>
     </div>
   </div>
+
   <!-- Reveal Confirm Modal -->
   <div class="modal" id="revealConfirmModal" x-cloak x-show="showRevealConfirm" x-transition.opacity>
-    <div class="modal-content" x-transition.scale tabindex="0"
-         @keydown.escape.prevent.stop="cancelReveal()"
-         @keydown.enter.prevent.stop="confirmReveal()">
+    <div class="modal-content" x-transition.scale tabindex="0" @keydown.escape.prevent.stop="cancelReveal()" @keydown.enter.prevent.stop="confirmReveal()">
       <h2>Reveal answer?</h2>
-      <p class="muted small" style="margin-top:-6px">If you reveal, this problem will be skipped and we'll move to the next problem. It won’t count toward your streak.</p>
-      <div class="row" style="justify-content:center;margin-top:12px;gap:10px">
-        <button class="btn" @click="confirmReveal()">Reveal &amp; Skip to Next Problem</button>
+      <p class="muted small -mt-1">If you reveal, this problem will be skipped and we'll move to the next problem. It won’t count toward your streak.</p>
+      <div class="flex justify-center gap-2 mt-3">
+        <button class="btn primary" @click="confirmReveal()">Reveal &amp; Skip to Next Problem</button>
         <button class="btn secondary" @click="cancelReveal()">Cancel</button>
       </div>
     </div>
@@ -171,20 +240,18 @@
 
   <!-- Login Modal (username-based) -->
   <div class="modal" id="loginModal" x-cloak x-show="showLogin" x-transition.opacity>
-    <div class="modal-content" x-transition.scale tabindex="0" 
-         @keydown.enter.stop.prevent="loginWithUsername()">
+    <div class="modal-content" x-transition.scale tabindex="0" @keydown.enter.stop.prevent="loginWithUsername()">
       <h2>Sign in</h2>
-      <p class="muted small" style="margin-top:-6px">Enter a username to start or continue. We’ll create your account if it doesn’t exist.</p>
+      <p class="muted small -mt-1">Enter a username to start or continue. We’ll create your account if it doesn’t exist.</p>
 
-      <div class="stack" style="text-align:left;margin-top:12px">
+      <div class="grid gap-3 text-left mt-3">
         <div class="panel">
-          <div class="row">
-            <input class="input" style="flex:1" placeholder="Your username (e.g. alice)"
-                   x-model="loginUsername" />
+          <div class="flex items-center gap-2">
+            <input class="input flex-1" placeholder="Your username (e.g. alice)" x-model="loginUsername" />
             <button class="btn secondary" @click="loginWithUsername()">Continue</button>
           </div>
         </div>
-        <div class="status err small" x-show="loginError" x-text="loginError"></div>
+        <div class="status small" x-show="loginError" x-text="loginError"></div>
       </div>
     </div>
   </div>
@@ -193,7 +260,7 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-  <!-- Alpine app -->
+  <!-- Alpine app (unchanged logic) -->
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.data('app', () => ({
@@ -231,9 +298,7 @@
         advanceOnCorrect: true,
         advanceDelayMs: 3000,
         advanceTimerId: null,
-        clearAdvanceTimer(){
-          if (this.advanceTimerId){ clearTimeout(this.advanceTimerId); this.advanceTimerId = null; }
-        },
+        clearAdvanceTimer(){ if (this.advanceTimerId){ clearTimeout(this.advanceTimerId); this.advanceTimerId = null; } },
 
         // ====== Derived ======
         get hasMultipleLessons(){ return this.lessons.length > 1; },
@@ -301,36 +366,20 @@
         async loginWithUsername(){
           this.loginError = '';
           const uname = (this.loginUsername || '').trim();
-          if (!uname){
-            this.loginError = 'Please enter a username.';
-            return;
-          }
+          if (!uname){ this.loginError = 'Please enter a username.'; return; }
           try{
-            const res = await fetch(`${this.API_BASE}/login`, {
-              method:'POST',
-              headers:{'Content-Type':'application/json'},
-              body: JSON.stringify({ username: uname })
-            });
-            if (!res.ok){
-              const text = await res.text().catch(()=> '');
-              throw new Error(text || `Login failed (${res.status})`);
-            }
+            const res = await fetch(`${this.API_BASE}/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username: uname }) });
+            if (!res.ok){ const text = await res.text().catch(()=> ''); throw new Error(text || `Login failed (${res.status})`); }
             const user = await res.json();
             this.setUser(user);
             this.closeLogin();
             await this.bootstrapLessons();
-          } catch(e){
-            console.error(e);
-            this.loginError = e?.message || 'Failed to log in.';
-          }
+          } catch(e){ console.error(e); this.loginError = e?.message || 'Failed to log in.'; }
         },
 
         async getUserByUsername(uname){
           const res = await fetch(`${this.API_BASE}/users/by-username/${encodeURIComponent(uname)}`);
-          if (!res.ok){
-            const text = await res.text().catch(()=> '');
-            throw new Error(text || `Failed to load user (${res.status})`);
-          }
+          if (!res.ok){ const text = await res.text().catch(()=> ''); throw new Error(text || `Failed to load user (${res.status})`); }
           return await res.json();
         },
 
@@ -338,102 +387,43 @@
           this.user = user || null;
           this.username = user?.username || null;
           this.userId = user?.user_id || null;
-          if (this.username){
-            localStorage.setItem('username', this.username);
-          }
+          if (this.username){ localStorage.setItem('username', this.username); }
         },
-        loadLocalUser(){
-          const raw = localStorage.getItem('username');
-          this.username = raw || null;
-        },
+        loadLocalUser(){ const raw = localStorage.getItem('username'); this.username = raw || null; },
         logout(silent=false){
           localStorage.removeItem('username');
-          this.user = null;
-          this.username = null;
-          this.userId = null;
+          this.user = null; this.username = null; this.userId = null;
           // Clear UI
-          this.answer = '';
-          this.problems = [];
-          this.lessons = [];
-          this.lessonIdx = 0;
-          this.problemIdx = 0;
+          this.answer = ''; this.problems = []; this.lessons = []; this.lessonIdx = 0; this.problemIdx = 0;
           if(!silent) this.openLogin();
         },
         openLogin(){
-          this.showLogin = true;
-          this.loginUsername = this.username || '';
-          this.loginError = '';
-          this.$nextTick(() => {
-            const el = document.querySelector('#loginModal .modal-content');
-            el && el.focus && el.focus();
-          });
+          this.showLogin = true; this.loginUsername = this.username || ''; this.loginError = '';
+          this.$nextTick(() => { const el = document.querySelector('#loginModal .modal-content'); el && el.focus && el.focus(); });
         },
         closeLogin(){ this.showLogin = false; },
 
         // ====== Backend I/O: Lessons/Problems/Validation/Attempts ======
-        async listLessons(){
-          const res = await fetch(`${this.API_BASE}/lessons`);
-          if(!res.ok) throw new Error('Failed to list lessons');
-          return await res.json();
-        },
-        async loadLesson(lessonId){
-          const res = await fetch(`${this.API_BASE}/lessons/${lessonId}`);
-          if(!res.ok) throw new Error('Lesson not found');
-          return await res.json();
-        },
-        async loadProblems(lessonId){
-          const res = await fetch(`${this.API_BASE}/lessons/${lessonId}/problems`);
-          if(!res.ok) throw new Error('Failed to load problems');
-          return await res.json();
-        },
+        async listLessons(){ const res = await fetch(`${this.API_BASE}/lessons`); if(!res.ok) throw new Error('Failed to list lessons'); return await res.json(); },
+        async loadLesson(lessonId){ const res = await fetch(`${this.API_BASE}/lessons/${lessonId}`); if(!res.ok) throw new Error('Lesson not found'); return await res.json(); },
+        async loadProblems(lessonId){ const res = await fetch(`${this.API_BASE}/lessons/${lessonId}/problems`); if(!res.ok) throw new Error('Failed to load problems'); return await res.json(); },
         async backendValidate(problemId, submission){
-          const res = await fetch(`${this.API_BASE}/validate`, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ problem_id: problemId, submission })
-          });
-          if(!res.ok){
-            const text = await res.text().catch(()=> "");
-            throw new Error(`Backend error (${res.status}): ${text || 'unknown'}`);
-          }
+          const res = await fetch(`${this.API_BASE}/validate`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ problem_id: problemId, submission }) });
+          if(!res.ok){ const text = await res.text().catch(()=> ""); throw new Error(`Backend error (${res.status}): ${text || 'unknown'}`); }
           return await res.json();
         },
         async recordAttempt(problemId, submission, backendResult){
           if (!this.username) return;
           try{
-            await fetch(`${this.API_BASE}/attempts`, {
-              method: 'POST',
-              headers: {'Content-Type':'application/json'},
-              body: JSON.stringify({
-                username: this.username,           // username-first
-                problem_id: problemId,
-                submitted_text: submission,
-                is_correct: !!backendResult.ok,
-                stage: backendResult.stage || null,
-                error_reason: backendResult.ok ? null : (backendResult.error || null),
-                details: backendResult.details || null
-              })
-            });
-          } catch(e){
-            console.warn('Failed to record attempt:', e);
-          }
+            await fetch(`${this.API_BASE}/attempts`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ username: this.username, problem_id: problemId, submitted_text: submission, is_correct: !!backendResult.ok, stage: backendResult.stage || null, error_reason: backendResult.ok ? null : (backendResult.error || null), details: backendResult.details || null }) });
+          } catch(e){ console.warn('Failed to record attempt:', e); }
         },
 
         // ====== Helpers ======
-        cleanProblemText(raw){
-          if (typeof raw !== 'string') return '';
-          return raw.replaceAll('\\n', '\n').trim();
-        },
-        setLessonBody(md){
-          this.lessonBodyHtml = (window.marked ? marked.parse(md || '') : md || '');
-        },
-        setResult(ok, msg){
-          this.resultOk = !!ok;
-          this.resultMessage = (ok ? '✅ ' : '❌ ') + (msg || '');
-          this.resultVisible = true;
-        },
+        cleanProblemText(raw){ if (typeof raw !== 'string') return ''; return raw.replaceAll('\\n', '\n').trim(); },
+        setLessonBody(md){ this.lessonBodyHtml = (window.marked ? marked.parse(md || '') : md || ''); },
+        setResult(ok, msg){ this.resultOk = !!ok; this.resultMessage = (ok ? '✅ ' : '❌ ') + (msg || ''); this.resultVisible = true; },
         hideResult(){ this.resultVisible = false; },
-
         getCfgText(nary, allowNeg){
           return (
 `S        ::= WS? Expr WS?
@@ -447,7 +437,7 @@ Int      ::= ` + (allowNeg ? `["-"] ("0" | NonZeroDigit {Digit})` : `"0" | NonZe
 Digit    ::= "0" | NonZeroDigit
 NonZeroDigit ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 
-WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
+WS       ::= {" " | "\t" | "\n" | "\r"}`
           );
         },
 
@@ -456,88 +446,35 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
           if (!this.lessons.length) return;
           const idx = (newIdx + this.lessons.length) % this.lessons.length;
           const target = this.lessons[idx];
-
-          if (!this.hasAccessToLesson(target.id)){
-            this.setResult(false, '🔒 Next lesson is locked. Get 3 correct in a row to unlock.');
-            return;
-          }
-
-          this.lessonIdx = idx;
-          this.selectedLessonId = String(target.id);
-
+          if (!this.hasAccessToLesson(target.id)){ this.setResult(false, '🔒 Next lesson is locked. Get 3 correct in a row to unlock.'); return; }
+          this.lessonIdx = idx; this.selectedLessonId = String(target.id);
           const freshLesson = await this.loadLesson(target.id);
           this.setLessonBody(this.cleanProblemText(freshLesson.body_md) || '');
-
           this.problems = await this.loadProblems(target.id);
-          this.problemIdx = 0;
-          this.successCount = 0;
-          this.showProblem();
+          this.problemIdx = 0; this.successCount = 0; this.showProblem();
         },
-        async setLessonById(id){
-          const idx = this.lessons.findIndex(l => l.id === Number(id));
-          if (idx >= 0) {
-            await this.setLessonByIndex(idx);
-          }
-        },
-        async refreshLesson(){
-          if (!this.lessons.length) return;
-          const current = this.lessons[this.lessonIdx];
-          const lesson = await this.loadLesson(current.id);
-          this.setLessonBody(this.cleanProblemText(lesson.body_md) || '');
-        },
-
-        showProblem(){
-          this.clearAdvanceTimer();
-          this.answer = '';
-          this.hideResult();
-          this.$nextTick(()=> { if(!this.showLogin) this.$refs.answerInput?.focus(); });
-        },
-
-        prevProblem(){
-          if(!this.problems.length) return;
-          this.clearAdvanceTimer();
-          this.problemIdx = (this.problemIdx - 1 + this.problems.length) % this.problems.length;
-          this.showProblem();
-        },
-
-        nextProblem(){
-          if(!this.problems.length) return;
-          this.clearAdvanceTimer();
-          this.problemIdx = (this.problemIdx + 1) % this.problems.length;
-          this.showProblem();
-        },
-
+        async setLessonById(id){ const idx = this.lessons.findIndex(l => l.id === Number(id)); if (idx >= 0) { await this.setLessonByIndex(idx); } },
+        async refreshLesson(){ if (!this.lessons.length) return; const current = this.lessons[this.lessonIdx]; const lesson = await this.loadLesson(current.id); this.setLessonBody(this.cleanProblemText(lesson.body_md) || ''); },
+        showProblem(){ this.clearAdvanceTimer(); this.answer = ''; this.hideResult(); this.$nextTick(()=> { if(!this.showLogin) this.$refs.answerInput?.focus(); }); },
+        prevProblem(){ if(!this.problems.length) return; this.clearAdvanceTimer(); this.problemIdx = (this.problemIdx - 1 + this.problems.length) % this.problems.length; this.showProblem(); },
+        nextProblem(){ if(!this.problems.length) return; this.clearAdvanceTimer(); this.problemIdx = (this.problemIdx + 1) % this.problems.length; this.showProblem(); },
         async check(){
           if (this.showLogin) return;
           if (this.isRevealed){ this.setResult(false, 'You revealed this one. Try the next problem.'); return; }
           const input = (this.answer || '').trim();
           if(!input){ this.setResult(false, 'Type your answer first'); return; }
-
           try{
-            const p = this.currentProblem;
-            if(!p){ this.setResult(false, 'No problem selected'); return; }
+            const p = this.currentProblem; if(!p){ this.setResult(false, 'No problem selected'); return; }
             const res = await this.backendValidate(p.id, input);
-
-            // Record attempt (fire-and-forget)
             this.recordAttempt(p.id, input, res);
-
             if (res.ok){
               const stage = res.stage ? ` (${res.stage})` : '';
               this.setResult(true, 'Correct!' + stage);
               this.successCount++;
-
-              if (this.successCount >= 3){
-                this.openCongrats();
-              }
-
+              if (this.successCount >= 3){ this.openCongrats(); }
               if (this.advanceOnCorrect){
                 this.clearAdvanceTimer();
-                this.advanceTimerId = setTimeout(() => {
-                  if (!this.showModal && !this.showLogin) {
-                    this.nextProblem();
-                  }
-                  this.clearAdvanceTimer();
-                }, this.advanceDelayMs);
+                this.advanceTimerId = setTimeout(() => { if (!this.showModal && !this.showLogin) { this.nextProblem(); } this.clearAdvanceTimer(); }, this.advanceDelayMs);
               }
             } else {
               let msg = res.error || 'Incorrect.';
@@ -546,84 +483,38 @@ WS       ::= {" " | "\\t" | "\\n" | "\\r"}`
                 if (f && f.expr) msg += `\nFailed test: ${f.expr}`;
               }
               this.setResult(false, msg);
-              // For strict "in a row", you could reset:
-              // this.successCount = 0;
             }
-          } catch(e){
-            this.setResult(false, e.message || 'Backend validation failed.');
-          }
+          } catch(e){ this.setResult(false, e.message || 'Backend validation failed.'); }
         },
-
-        reveal(){
-          if (this.showLogin) return;
-          if (this.isRevealed) return;
-          this.openRevealConfirm();
-        },
-
+        reveal(){ if (this.showLogin) return; if (this.isRevealed) return; this.openRevealConfirm(); },
         openRevealConfirm(){ this.showRevealConfirm = true; this.$nextTick(()=> { document.querySelector('#revealConfirmModal .modal-content')?.focus(); }); },
         cancelReveal(){ this.showRevealConfirm = false; },
         async confirmReveal(){
           this.showRevealConfirm = false;
-          const p = this.currentProblem;
-          const ans = p?.answer_text || 'N/A';
+          const p = this.currentProblem; const ans = p?.answer_text || 'N/A';
           if (p){ this.revealedById[p.id] = true; }
           this.setResult(true, 'Answer: ' + ans + ' — (This problem is marked as revealed and won’t count toward your streak)');
           this.clearAdvanceTimer();
-          this.advanceTimerId = setTimeout(() => {
-            if (!this.showModal && !this.showLogin) {
-              this.nextProblem();
-            }
-            this.clearAdvanceTimer();
-          }, this.advanceDelayMs);
+          this.advanceTimerId = setTimeout(() => { if (!this.showModal && !this.showLogin) { this.nextProblem(); } this.clearAdvanceTimer(); }, this.advanceDelayMs);
         },
-
-        shuffle(){
-          for(let i=this.problems.length-1;i>0;i--){
-            const j=Math.floor(Math.random()*(i+1));
-            [this.problems[i], this.problems[j]] = [this.problems[j], this.problems[i]];
-          }
-          this.problemIdx = 0;
-          this.showProblem();
-        },
+        shuffle(){ for(let i=this.problems.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [this.problems[i], this.problems[j]] = [this.problems[j], this.problems[i]]; } this.problemIdx = 0; this.showProblem(); },
 
         // ====== Modal controls for next-lesson flow ======
         openCongrats(){ this.showModal = true; },
         closeCongrats(){ this.showModal = false; },
-
         async confirmAdvanceLesson(){
           this.closeCongrats();
           if (!this.username){ this.setResult(false, 'Please sign in first.'); return; }
           try{
-            // Use username-based advance endpoint
             const res = await fetch(`${this.API_BASE}/users/by-username/${encodeURIComponent(this.username)}/advance`, { method: 'POST' });
-            if(!res.ok){
-              const text = await res.text().catch(()=> '');
-              throw new Error(text || `Advance failed (${res.status})`);
-            }
+            if(!res.ok){ const text = await res.text().catch(()=> ''); throw new Error(text || `Advance failed (${res.status})`); }
             const updated = await res.json();
-
-            // Update local user state
-            this.user = updated;
-            this.username = updated.username;
-            this.userId = updated.user_id;
-            localStorage.setItem('username', this.username);
-
+            this.user = updated; this.username = updated.username; this.userId = updated.user_id; localStorage.setItem('username', this.username);
             this.successCount = 0;
-
-            // Jump to newly activated lesson
-            if (updated.active_lesson){
-              await this.setLessonById(updated.active_lesson);
-              this.setResult(true, 'Next lesson unlocked!');
-            }
-          } catch(e){
-            this.setResult(false, e?.message || 'Could not advance to next lesson.');
-          }
+            if (updated.active_lesson){ await this.setLessonById(updated.active_lesson); this.setResult(true, 'Next lesson unlocked!'); }
+          } catch(e){ this.setResult(false, e?.message || 'Could not advance to next lesson.'); }
         },
-
-        resetStreakAndStay(){
-          this.successCount = 0;
-          this.closeCongrats();
-        },
+        resetStreakAndStay(){ this.successCount = 0; this.closeCongrats(); },
       }));
     });
   </script>
