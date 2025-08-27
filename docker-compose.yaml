@@ -1,177 +1,4 @@
-# # # version: "3.9"
-
-# # # services:
-# # #   db:
-# # #     image: postgres:16
-# # #     container_name: sxpr_db
-# # #     restart: unless-stopped
-# # #     environment:
-# # #       POSTGRES_DB: sxpr_db
-# # #       POSTGRES_USER: postgres
-# # #       POSTGRES_PASSWORD: postgres
-# # #     ports:
-# # #       - "5432:5432"
-# # #     volumes:
-# # #       - pgdata:/var/lib/postgresql/data
-# # #     healthcheck:
-# # #       test: ["CMD-SHELL", "pg_isready -U postgres -d sxpr_db"]
-# # #       interval: 5s
-# # #       timeout: 5s
-# # #       retries: 10
-
-# # #   app:
-# # #     build:
-# # #       context: ./app
-# # #       dockerfile: Dockerfile
-# # #     container_name: sxpr_api
-# # #     restart: unless-stopped
-# # #     depends_on:
-# # #       db:
-# # #         condition: service_healthy
-# # #     env_file:
-# # #       - .env
-# # #     ports:
-# # #       - "8000:8000"
-# # #     healthcheck:
-# # #       test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
-# # #       interval: 5s
-# # #       timeout: 3s
-# # #       retries: 20
-
-# # # volumes:
-# # #   pgdata:
-
-
-# # version: "3.9"
-
-# # services:
-# #   db:
-# #     image: postgres:16
-# #     container_name: sxpr_db
-# #     restart: unless-stopped
-# #     environment:
-# #       POSTGRES_DB: sxpr_db
-# #       POSTGRES_USER: postgres
-# #       POSTGRES_PASSWORD: postgres
-# #     ports:
-# #       - "5432:5432"   # or "5433:5432" if 5432 is busy on host
-# #     volumes:
-# #       - pgdata:/var/lib/postgresql/data
-# #     healthcheck:
-# #       test: ["CMD-SHELL", "pg_isready -U postgres -d sxpr_db"]
-# #       interval: 5s
-# #       timeout: 5s
-# #       retries: 10
-
-# #   app:
-# #     build:
-# #       context: ./app
-# #       dockerfile: Dockerfile
-# #     container_name: sxpr_api
-# #     restart: unless-stopped
-# #     depends_on:
-# #       db:
-# #         condition: service_healthy
-# #       racket_runner:
-# #         condition: service_started
-# #     env_file:
-# #       - .env
-# #     environment:
-# #       RACKET_RUNNER_URL: http://racket_runner:8080
-# #     ports:
-# #       - "8000:8000"
-# #     healthcheck:
-# #       test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
-# #       interval: 5s
-# #       timeout: 3s
-# #       retries: 20
-
-# #   racket_runner:
-# #     build:
-# #       context: ./racket-runner
-# #       dockerfile: Dockerfile
-# #     container_name: sxpr_racket_runner
-# #     restart: unless-stopped
-# #     expose:
-# #       - "8080"
-# #     healthcheck:
-# #       test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
-# #       interval: 5s
-# #       timeout: 3s
-# #       retries: 20
-
-# # volumes:
-# #   pgdata:
-
-# version: "3.9"
-
-# services:
-#   db:
-#     image: postgres:16
-#     container_name: sxpr_db
-#     restart: unless-stopped
-#     environment:
-#       POSTGRES_DB: sxpr_db
-#       POSTGRES_USER: postgres
-#       POSTGRES_PASSWORD: postgres
-#     # If host 5432 conflicts, switch to "5433:5432"
-#     ports:
-#       - "5432:5432"
-#     volumes:
-#       - pgdata:/var/lib/postgresql/data
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U postgres -d sxpr_db"]
-#       interval: 5s
-#       timeout: 5s
-#       retries: 10
-
-#   app:
-#     build:
-#       context: ./app
-#       dockerfile: Dockerfile
-#     container_name: sxpr_api
-#     restart: unless-stopped
-#     depends_on:
-#       db:
-#         condition: service_healthy
-#       racket_runner:
-#         condition: service_healthy     # changed from service_started
-#     env_file:
-#       - .env
-#     environment:
-#       RACKET_RUNNER_URL: http://racket_runner:8080
-#     ports:
-#       - "8000:8000"
-#     healthcheck:
-#       # requires curl in the image
-#       test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
-#       interval: 5s
-#       timeout: 3s
-#       retries: 20
-
-#   racket_runner:
-#     build:
-#       context: ./racket-runner
-#     container_name: sxpr_racket_runner
-#     restart: unless-stopped
-#     # Expose is fine for internal-only access. If you want to curl from host, add:
-#     ports:
-#       - "8080:8080"
-#     expose:
-#       - "8080"
-#     healthcheck:
-#       # requires curl in the image
-#       test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
-#       interval: 5s
-#       timeout: 3s
-#       retries: 20
-
-# volumes:
-#   pgdata:
-
-
 version: "3.9"
-
 services:
   db:
     image: postgres:16
@@ -230,7 +57,10 @@ services:
       retries: 20
 
   web:
-    image: nginx:alpine
+    build:
+      context: ./s-expression-vite
+      dockerfile: Dockerfile.prod
+    image: sxpr-frontend:latest
     container_name: sxpr_web
     restart: unless-stopped
     ports:
@@ -239,8 +69,26 @@ services:
       app:
         condition: service_healthy
     volumes:
-      - ./web:/usr/share/nginx/html:ro           # your index.html lives here
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    profiles: ["production"]
+
+  vite-dev:
+    build:
+      context: ./s-expression-vite
+      dockerfile: Dockerfile.dev
+    container_name: sxpr_vite_dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - ./s-expression-vite:/app:cached
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE=http://localhost:8000
+    profiles: ["development"]
 
 volumes:
   pgdata:
